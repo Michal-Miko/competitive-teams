@@ -6,14 +6,13 @@ from fastapi import Depends, FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.database import crud
-from app.models import models
 from app.schemas import schemas
-from app.database.database import SessionLocal, engine
+from app.database.database import SessionLocal, init_models
 from app.firebase import firebase
 from app.permissions import permissions
 
-models.Base.metadata.create_all(bind=engine)
 
+init_models()
 app = FastAPI()
 
 origins = ["*"]
