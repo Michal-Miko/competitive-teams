@@ -45,3 +45,10 @@ def test_check_not_empty():
             'role': 'admin',
         }
     ]
+
+def test_check_empty2(restart_db):
+    response = client.get(
+        "/api/players/",
+    )
+    assert response.status_code == 200
+    assert response.json() == []
