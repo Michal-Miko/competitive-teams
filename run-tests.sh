@@ -3,7 +3,7 @@
 # Stop when one of the servers exits with a non-zero exit code
 set -e
 
-export DATABASE_URL=postgresql://postgres:@localhost/postgres
+export DATABASE_URL=sqlite:///:memory:
 # Tests
 source ./backend/env/bin/activate
 cd backend

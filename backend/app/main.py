@@ -1,28 +1,18 @@
-"""
-    main.py
-"""
 from typing import List
 from fastapi import Depends, FastAPI, HTTPException, Header
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from app.database import crud
 from app.schemas import schemas
-from app.database.database import SessionLocal, init_models
+from app.database.database import SessionLocal
 from app.firebase import firebase
 from app.permissions import permissions
+from app.utils.cors import add_cors
 
 
-init_models()
 app = FastAPI()
+add_cors(app)
 
-origins = ["*"]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 # Dependency
 def get_db():
     db = SessionLocal()
