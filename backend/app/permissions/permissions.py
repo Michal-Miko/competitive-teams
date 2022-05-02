@@ -1,7 +1,9 @@
-from termios import CKILL
 from app.database import crud
 from fastapi import HTTPException, status
-from app.utils.exceptions import InvalidRoleException
+
+
+class InvalidRoleException(Exception):
+    pass
 
 
 ROLES = {
@@ -32,7 +34,7 @@ def is_accessible(db, firebase_id, clearance="player"):
 
 
 def permission_denied(clearance):
-    text = "Permission denied"
+    text = "Permission denied. Required role: {}.".format(clearance)
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=text)
 
 

@@ -1,11 +1,12 @@
 from typing import List
-from fastapi import Depends, FastAPI, HTTPException, Header
+from fastapi import Depends, FastAPI, HTTPException, Header, status
 from sqlalchemy.orm import Session
 from app.database import crud
 from app.schemas import schemas
 from app.database.database import SessionLocal
 from app.firebase import firebase
 from app.permissions import permissions
+from app.exceptions import exceptions
 from app.utils.cors import add_cors
 
 
@@ -40,8 +41,7 @@ def delete_team(
 ):
     clearance = "moderator"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_team(db, team_id=team_id) is None:
-        raise HTTPException(status_code=404, detail="Team not found")
+    exceptions.check_for_team_existence(db=db, team_id=team_id)
     crud.delete_team(db, team_id)
 
 
@@ -57,15 +57,12 @@ def update_team(
         db=db, firebase_id=firebase_id, clearance=clearance
     )
     if access:
-        if crud.get_team(db, team_id=team_id) is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         crud.update_team(db, team_id=team_id, team=team)
     else:
-        db_team = crud.get_team(db, team_id=team_id)
-        if crud.get_team(db, team_id=team_id) is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
-        if db_player is None:
+        if crud.get_player_by_firebase_id(db, firebase_id=firebase_id) is None:
             permissions.permission_denied(clearance)
         flag = crud.is_player_captain(db, player_id=db_player.id, team_id=team_id)
         if flag:
@@ -80,10 +77,8 @@ def read_team(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    db_team = crud.get_team(db, team_id=team_id)
-    if db_team is None:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return db_team
+    exceptions.check_for_team_existence(db=db, team_id=team_id)
+    return crud.get_team(db, team_id=team_id)
 
 
 @app.get("/api/teams/", response_model=List[schemas.Team])
@@ -140,7 +135,7 @@ def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     if db_player is None and db_player_name is None:
         return crud.create_player(db=db, player=player)
     if db_player is None:
-        raise HTTPException(status_code=404, detail="Name already used")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
     return db_player
 
 
@@ -150,8 +145,7 @@ def delete_player(
 ):
     clearance = "admin"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     crud.delete_player(db, player_id)
 
 
@@ -167,12 +161,11 @@ def update_player(
         db=db, firebase_id=firebase_id, clearance=clearance
     )
     def update():
-        if crud.get_player(db, player_id=player_id) is None:
-            raise HTTPException(status_code=404, detail="Player not found")
+        exceptions.check_for_player_existence(db=db, player_id=player_id)
         player_check = crud.get_player_by_name(db, name=player.name)
         old_player = crud.get_player(db, player_id=player_id)
         if player_check is not None and old_player.name is not player_check.name:
-            raise HTTPException(status_code=404, detail="Name already used")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
         crud.update_player(db, player_id=player_id, player=player)
 
     if access:
@@ -183,7 +176,7 @@ def update_player(
         if db_user is None:
             permissions.permission_denied(clearance)
         if db_player is None:
-            raise HTTPException(status_code=404, detail="Player not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
         if db_user.id == db_player.id:
             update()
         else:
@@ -199,11 +192,10 @@ def change_role(
 ):
     clearance = "admin"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     if player_role not in ["admin", "moderator", "player"]:
         raise HTTPException(
-            status_code=412, detail="Invalid role: " + str(player_role)
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role: " + str(player_role)
         )
     crud.change_role(db, player_id=player_id, player_role=player_role)
 
@@ -260,10 +252,8 @@ def read_player(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    db_player = crud.get_player(db, player_id=player_id)
-    if db_player is None:
-        raise HTTPException(status_code=404, detail="Player not found")
-    return db_player
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
+    return crud.get_player(db, player_id=player_id)
 
 
 @app.get("/api/players/firebase_id/{wanted_firebase_id}", response_model=schemas.Player)
@@ -276,7 +266,7 @@ def read_player_by_firebase_id(
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
     db_player = crud.get_player_by_firebase_id(db, firebase_id=wanted_firebase_id)
     if db_player is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
     return db_player
 
 
@@ -290,8 +280,7 @@ def read_player_teams(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_player_teams(db, player_id=player_id, skip=skip, limit=limit)
 
 
@@ -305,8 +294,7 @@ def read_player_captain_teams(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_player_captain_teams(db, player_id=player_id, skip=skip, limit=limit)
 
 
@@ -324,21 +312,17 @@ def link_player_to_team(
     )
 
     def link():
-        if crud.get_player(db, player_id=player_id) is None:
-            raise HTTPException(status_code=404, detail="Player not found")
-        if crud.get_team(db, team_id=team_id) is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_player_existence(db=db, player_id=player_id)
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         if not crud.is_player_in_team(db, player_id=player_id, team_id=team_id):
             crud.link_player_to_team_with_id(db, team_id, player_id)
         else:
-            raise HTTPException(status_code=404, detail="Player already in the team")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player already in the team")
 
     if access:
         link()
     else:
-        db_team = crud.get_team(db, team_id=team_id)
-        if db_team is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
             permissions.permission_denied(clearance)
@@ -362,21 +346,17 @@ def unlink_player_to_team(
     )
 
     def unlink():
-        if crud.get_player(db, player_id=player_id) is None:
-            raise HTTPException(status_code=404, detail="Player not found")
-        if crud.get_team(db, team_id=team_id) is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_player_existence(db=db, player_id=player_id)
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         if crud.is_player_in_team(db, player_id=player_id, team_id=team_id):
             crud.unlink_player_to_team_with_id(db, team_id, player_id)
         else:
-            raise HTTPException(status_code=404, detail="Player is not in the team")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player is not in the team")
 
     if access:
         unlink()
     else:
-        db_team = crud.get_team(db, team_id=team_id)
-        if db_team is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
             permissions.permission_denied(clearance)
@@ -400,20 +380,16 @@ def set_team_captain(
     )
 
     def set_captain():
-        if crud.get_player(db, player_id=player_id) is None:
-            raise HTTPException(status_code=404, detail="Player not found")
-        if crud.get_team(db, team_id=team_id) is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_player_existence(db=db, player_id=player_id)
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         if not crud.is_player_in_team(db, player_id=player_id, team_id=team_id):
-            raise HTTPException(status_code=404, detail="Player not in team")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player not in team")
         crud.set_team_captain(db, player_id=player_id, team_id=team_id)
 
     if access:
         set_captain()
     else:
-        db_team = crud.get_team(db, team_id=team_id)
-        if db_team is None:
-            raise HTTPException(status_code=404, detail="Team not found")
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
             permissions.permission_denied(clearance)
@@ -435,14 +411,9 @@ def create_match(
 ):
     clearance = "moderator"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    db_team1 = crud.get_team(db, team_id=team1_id)
-    db_team2 = crud.get_team(db, team_id=team2_id)
-    if db_team1 is None or db_team2 is None:
-        raise HTTPException(status_code=404, detail="Team not found")
-    db_match = crud.create_match(
-        db=db, match=match, team1_id=team1_id, team2_id=team2_id
-    )
-    return db_match
+    exceptions.check_for_team_existence(db=db, team_id=team1_id)
+    exceptions.check_for_team_existence(db=db, team_id=team2_id)
+    return crud.create_match(db=db, match=match, team1_id=team1_id, team2_id=team2_id)
 
 
 @app.get("/api/matches/", response_model=List[schemas.Match])
@@ -492,9 +463,7 @@ def read_upcoming_personal_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    player = crud.get_player(db=db, player_id=player_id)
-    if player is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_personal_upcoming_matches(db, player_id=player_id, skip=skip, limit=limit)
 
 
@@ -506,8 +475,7 @@ def count_upcoming_personal_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db=db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.count_personal_upcoming_matches(db, player_id=player_id)
 
 
@@ -523,8 +491,7 @@ def read_finished_personal_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db=db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_personal_finished_matches(db, player_id=player_id, skip=skip, limit=limit)
 
 
@@ -536,8 +503,7 @@ def count_finished_personal_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_player(db=db, player_id=player_id) is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+    exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.count_personal_finished_matches(db, player_id=player_id)
 
 
@@ -573,10 +539,9 @@ def read_match(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    exceptions.check_for_match_existence(db=db, match_id=match_id)
     db_match = crud.get_match(db, match_id=match_id)
-    if db_match is None:
-        raise HTTPException(status_code=404, detail="Match not found")
-    return db_match
+    return crud.get_match(db, match_id=match_id)
 
 
 @app.patch("/api/matches/{match_id}")
@@ -588,8 +553,7 @@ def update_match(
 ):
     clearance = "moderator"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_match(db, match_id=match_id) is None:
-        raise HTTPException(status_code=404, detail="Match not found")
+    exceptions.check_for_match_existence(db=db, match_id=match_id)
     crud.update_match(db, match_id=match_id, match=match)
 
 
@@ -607,36 +571,32 @@ def create_tournament(
         "swiss",
         "single-elimination",
     ]:
-        raise HTTPException(status_code=404, detail="Tournament type unknown")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tournament type unknown")
     teams_ids = tournament.teams_ids
     for team_id in teams_ids:
-        check = crud.get_team(db, team_id)
-        if check is None:
-            raise HTTPException(
-                status_code=404, detail="Team " + str(team_id) + " not found"
-            )
+        exceptions.check_for_team_existence(db=db, team_id=team_id)
     if tournament.tournament_type == "swiss":
         if len(teams_ids) % 2:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Swiss tournament: requires even number of teams",
             )
         if len(teams_ids) < tournament.swiss_rounds + 1:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Swiss tournament: Not enough teams for "
                 + str(tournament.swiss_rounds)
                 + " number of rounds",
             )
         if tournament.swiss_rounds <= 0:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Swiss tournament: non-positive number of rounds",
             )
     elif tournament.tournament_type == "single-elimination":
         if len(teams_ids) not in [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]:
             raise HTTPException(
-                status_code=404,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Single-elimination tournament: number of teams should be a power of 2",
             )
     return crud.create_tournament(db=db, tournament=tournament)
@@ -698,7 +658,7 @@ def read_tournament(
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
     db_tournament = crud.get_tournament(db, tournament_id=tournament_id)
     if db_tournament is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
     return db_tournament
 
 
@@ -716,23 +676,22 @@ def update_tournament_match(
     clearance = "moderator"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
     db_tournament = crud.get_tournament(db, tournament_id=tournament_id)
-    if crud.get_match(db, match_id=match_id) is None:
-        raise HTTPException(status_code=404, detail="Match not found")
+    exceptions.check_for_match_existence(db=db, match_id=match_id)
     if db_tournament is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
     if not crud.is_match_in_tournament(
         db, tournament_id=tournament_id, match_id=match_id
     ):
-        raise HTTPException(status_code=404, detail="Match not in tournament")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Match not in tournament")
     if crud.is_match_empty(db, match_id=match_id):
         raise HTTPException(
-            status_code=404, detail="Teams are not set in match yet"
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Teams are not set in match yet"
         )
     if db_tournament.tournament_type == "single-elimination" and (
         match.score1 == match.score2
     ):
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="No ties allowed in single-elimination tournament",
         )
     crud.update_tournament_match(
@@ -750,12 +709,8 @@ def read_tournament_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_tournament(db, tournament_id=tournament_id) is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
-    matches = crud.get_tournament_matches(
-        db, tournament_id=tournament_id, skip=skip, limit=limit
-    )
-    return matches
+    exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
+    return crud.get_tournament_matches(db, tournament_id=tournament_id, skip=skip, limit=limit)
 
 
 @app.get("/api/tournament_matches_count/", response_model=int)
@@ -766,9 +721,7 @@ def count_tournament_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    tournament = crud.get_tournament(db, tournament_id=tournament_id)
-    if tournament is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
+    exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.count_tournament_matches(db, tournament_id=tournament_id)
 
 
@@ -786,12 +739,8 @@ def read_tournament_finished_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_tournament(db, tournament_id=tournament_id) is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
-    matches = crud.get_tournament_finished_matches(
-        db, tournament_id=tournament_id, skip=skip, limit=limit
-    )
-    return matches
+    exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
+    return crud.get_tournament_finished_matches(db, tournament_id=tournament_id, skip=skip, limit=limit)
 
 
 @app.get(
@@ -807,8 +756,7 @@ def read_tournament_unfinished_matches(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_tournament(db, tournament_id=tournament_id) is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
+    exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_unfinished_matches(
         db, tournament_id=tournament_id, skip=skip, limit=limit
     )
@@ -825,6 +773,5 @@ def read_tournament_scoreboard(
 ):
     clearance = "guest"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
-    if crud.get_tournament(db, tournament_id=tournament_id) is None:
-        raise HTTPException(status_code=404, detail="Tournament not found")
+    exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_scoreboard(db, tournament_id=tournament_id)
