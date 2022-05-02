@@ -1,5 +1,6 @@
+from termios import CKILL
 from app.database import crud
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from app.utils.exceptions import InvalidRoleException
 
 
@@ -25,11 +26,16 @@ def is_accessible(db, firebase_id, clearance="player"):
     else:
         db_player = crud.get_player_by_firebase_id(db, firebase_id)
         if db_player is None:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         db_role = db_player.role
     return is_higher_role(db_role, clearance)
 
 
 def permission_denied(clearance):
     text = "Permission denied"
-    raise HTTPException(status_code=403, detail=text)
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=text)
+
+
+def check_for_permission(db, firebase_id, clearance):
+    if not is_accessible(db=db, firebase_id=firebase_id, clearance=clearance):
+        permission_denied(clearance=clearance)
