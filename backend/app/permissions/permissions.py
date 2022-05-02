@@ -1,18 +1,22 @@
 from app.database import crud
 from fastapi import HTTPException
+from app.utils.exceptions import InvalidRoleException
+
+
+ROLES = {
+    "admin": 10,
+    "moderator": 5,
+    "player": 1,
+    "guest": 0,
+}
 
 
 def is_higher_role(role1, role2):
-    roles = {}
-    roles["admin"] = 10
-    roles["moderator"] = 5
-    roles["player"] = 1
-    roles["guest"] = 0
-    if role1 not in roles:
-        raise Exception("role1 is not a role")
-    if role2 not in roles:
-        raise Exception("role2 is not a role")
-    return roles[role1] >= roles[role2]
+    if role1 not in ROLES:
+        raise InvalidRoleException("{} is not a valid role".format(role1))
+    if role2 not in ROLES:
+        raise InvalidRoleException("{} is not a valid role".format(role2))
+    return ROLES[role1] >= ROLES[role2]
 
 
 def is_accessible(db, firebase_id, clearance="player"):
