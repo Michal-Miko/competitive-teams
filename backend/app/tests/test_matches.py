@@ -1,8 +1,10 @@
 from test_config import client, restart_db
 
 
-# LINK PLAYER TO TEAM
-# UNLINK PLAYER FROM TEAM
+# CREATE
+# UPDATE
+# READ
+
 
 def test_1():
     assert True

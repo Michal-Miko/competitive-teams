@@ -2,6 +2,7 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException, Header, status
 from sqlalchemy.orm import Session
 from app.database import crud
+from app.database.database import Base, engine
 from app.schemas import schemas
 from app.database.database import SessionLocal
 from app.firebase import firebase
@@ -11,6 +12,7 @@ from app.utils.cors import add_cors
 from app.firebase.firebase import default_app, verify_token
 
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 add_cors(app)
 
@@ -198,7 +200,7 @@ def change_role(
     clearance = "admin"
     permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
-    if player_role not in ["admin", "moderator", "player"]:
+    if player_role not in ["admin", "moderator", "player", "guest"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role: " + str(player_role)
         )

@@ -1,8 +1,11 @@
 from test_config import client, restart_db
 
 
-# LINK PLAYER TO TEAM
-# UNLINK PLAYER FROM TEAM
+# CREATE
+# READ
+# UPDATE TOURNAMENT MATCH
+# READ TOURNAMENT MATCH
+
 
 def test_1():
     assert True
