@@ -47,7 +47,7 @@ def delete_team(
     crud.delete_team(db, team_id)
 
 
-@app.patch("/api/teams/{player_id}")
+@app.patch("/api/teams/{team_id}")
 def update_team(
     team_id: int,
     team: schemas.TeamUpdate,
@@ -64,7 +64,7 @@ def update_team(
     else:
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
-        if crud.get_player_by_firebase_id(db, firebase_id=firebase_id) is None:
+        if db_player is None:
             permissions.permission_denied(clearance)
         flag = crud.is_player_captain(db, player_id=db_player.id, team_id=team_id)
         if flag:
