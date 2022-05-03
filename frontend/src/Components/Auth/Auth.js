@@ -8,6 +8,7 @@ export const AuthContext = React.createContext();
 export const AuthProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [currentToken, setCurrentToken] = useState(null);
   const [pending, setPending] = useState(true);
   const queryClient = useQueryClient();
 
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
     Api.patch(
       `/players/${data.id}`,
       { name: data.name, description: data.description, colour: data.colour },
-      { headers: { "firebase-id": currentUser.uid } }
+      { headers: { "firebase-token": currentToken } }
     )
       .then(() => {
         Notification("success", "Success", "Updated successfully.");
@@ -37,13 +38,13 @@ export const AuthProvider = ({ children }) => {
     ["userData", currentUser],
     async () => {
       const res = await Api.get(`/players/firebase_id/${currentUser.uid}`, {
-        headers: { "firebase-id": currentUser.uid },
+        headers: { "firebase-token": currentToken },
       });
       setUserData(res.data);
       return res.data;
     },
     {
-      enabled: !!currentUser,
+      enabled: !!currentToken,
     }
   );
 
@@ -51,16 +52,38 @@ export const AuthProvider = ({ children }) => {
     app.auth().onAuthStateChanged((user) => {
       setCurrentUser(user);
       setPending(false);
+      console.log("Auth change state");
+
       if (user) {
-        let user_uid = user.uid;
-        const rgb = Math.floor(Math.random() * 16777215);
-        const random_color = "#" + rgb.toString(16);
-        Api.post("/players/", {
-          name: user_uid.substr(0, 5),
-          description: "Empty",
-          firebase_id: user_uid,
-          colour: random_color,
-        });
+        user
+          .getIdToken()
+          .then(function (idToken) {
+            setCurrentToken(idToken);
+            const rgb = Math.floor(Math.random() * 16777215);
+            const random_color = "#" + rgb.toString(16);
+            Api.post("/players/", {
+              name: user.uid.substr(0, 5),
+              description: "Empty",
+              firebase_id: idToken,
+              colour: random_color,
+            }).catch((error) =>
+              Notification(
+                "error",
+                "Error during login attempt",
+                error.response && error.response.data.detail
+                  ? error.response.data.detail
+                  : error.message
+              )
+            );
+          })
+          .catch((_) => {
+            setCurrentToken(null);
+            setCurrentUser(null);
+          });
+      } else {
+        setCurrentToken(null);
+        setCurrentUser(null);
+        setUserData(null);
       }
     });
   }, []);
@@ -73,6 +96,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         currentUser,
+        currentToken,
         userData,
         update,
       }}

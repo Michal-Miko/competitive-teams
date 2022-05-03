@@ -26,9 +26,9 @@ const ModifyTournamentMatch = ({
   score1,
   score2,
 }) => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
-  const hdrs = { headers: { "firebase-id": fbId } };
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
+  const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
 
   const queryClient = useQueryClient();

@@ -9,8 +9,8 @@ import Team from "../Team";
 const { Title } = Typography;
 
 const Match = ({ id }) => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   // If no id has been passed, check router params
   const { matchid } = useParams();
@@ -23,7 +23,7 @@ const Match = ({ id }) => {
   useEffect(() => {
     if (id === null || id === undefined) setErr("No match id passed.");
     else {
-      Api.get("/matches/" + id, { headers: { "firebase-id": fbId } })
+      Api.get("/matches/" + id, { headers: { "firebase-token": fbToken } })
         .then((response) => {
           if (response.status === 200) {
             setMatchdata(response.data);
@@ -34,7 +34,7 @@ const Match = ({ id }) => {
           setErr(err.toString());
         });
     }
-  }, [id, fbId]);
+  }, [id, fbToken]);
 
   function color(matchd) {
     if (matchd.finished) {

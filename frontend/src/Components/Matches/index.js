@@ -18,8 +18,8 @@ const { Content } = Layout;
 const { Panel } = Collapse;
 const { Title } = Typography;
 const Matches = () => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
   const [matchesOnPage, setMatchesOnPage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [allMatches, setAllMatches] = useState(0);
@@ -31,7 +31,7 @@ const Matches = () => {
     Api.get(
       `/matches/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
       {
-        headers: { "firebase-id": fbId, name: searched },
+        headers: { "firebase-token": fbToken, name: searched },
       }
     )
       .then((result) => {
@@ -41,12 +41,12 @@ const Matches = () => {
         setMatchesOnPage(null);
         setErr(err.toString());
       });
-  }, [fbId, currentPage, searched]);
+  }, [fbToken, currentPage, searched]);
 
   useEffect(() => {
     setCurrentPage(1);
     Api.get(`/matches_count_by_search/`, {
-      headers: { "firebase-id": fbId, name: searched },
+      headers: { "firebase-token": fbToken, name: searched },
     })
       .then((result) => {
         setAllMatches(result.data);
@@ -55,7 +55,7 @@ const Matches = () => {
         setMatchesOnPage(null);
         setErr(err.toString());
       });
-  }, [searched, fbId]);
+  }, [searched, fbToken]);
 
   return matchesOnPage ? (
     <Layout className="list-background">

@@ -14,9 +14,9 @@ const openNotificationWithIcon = (type, title, msg) => {
 };
 
 const RemovePlayer = ({ teamid, playerid }) => {
-  let { currentUser, userData } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
-  const hdrs = { headers: { "firebase-id": fbId } };
+  let { currentToken, currentUser, userData } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
+  const hdrs = { headers: { "firebase-token": fbToken } };
   const queryClient = useQueryClient();
 
   const handleClick = () => {

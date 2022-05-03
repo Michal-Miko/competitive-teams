@@ -17,8 +17,8 @@ const { Content } = Layout;
 const { Panel } = Collapse;
 const { Title } = Typography;
 const UpcomingMatches = () => {
-  let { currentUser, userData } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken, userData } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
   const [matchesOnPage, setMatchesOnPage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [err, setErr] = useState(null);
@@ -32,7 +32,7 @@ const UpcomingMatches = () => {
           (currentPage - 1) * pageSize
         }&limit=${pageSize}`,
         {
-          headers: { "firebase-id": fbId },
+          headers: { "firebase-token": fbToken },
         }
       )
         .then((result) => {
@@ -43,12 +43,12 @@ const UpcomingMatches = () => {
           setErr(err.toString());
         });
     }
-  }, [fbId, currentPage, userData]);
+  }, [fbToken, currentPage, userData]);
 
   useEffect(() => {
     if (userData) {
       Api.get(`/count_personal_upcoming_matches/${userData.id}`, {
-        headers: { "firebase-id": fbId },
+        headers: { "firebase-token": fbToken },
       })
         .then((result) => {
           setAllMatches(result.data);
@@ -58,7 +58,7 @@ const UpcomingMatches = () => {
           setErr(err.toString());
         });
     }
-  }, [fbId, userData]);
+  }, [fbToken, userData]);
 
   return matchesOnPage ? (
     <Card

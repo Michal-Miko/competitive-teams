@@ -25,7 +25,7 @@ const validateMessages = {
   required: "${label} is required!",
 };
 const CreateTeams = ({
-  fbId,
+  fbToken,
   cancel,
   onFinish,
   teamsNumber,
@@ -36,7 +36,7 @@ const CreateTeams = ({
   const handleSearch = (value) => {
     Api.get("/teams/search/", {
       headers: {
-        "firebase-id": fbId,
+        "firebase-token": fbToken,
         name: value,
       },
     }).then((result) => {
@@ -135,8 +135,8 @@ const CreateTournament = ({ cancel, onFinish }) => (
   </Form>
 );
 const TournamentCreator = () => {
-  const { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  const { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
   const [visible, setVisible] = useState(false);
   const [teamIDs, setTeamIDs] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState({});
@@ -167,12 +167,13 @@ const TournamentCreator = () => {
       },
       {
         headers: {
-          "firebase-id": fbId,
+          "firebase-token": fbToken,
         },
       }
     )
       .then(() => {
         setTeamIDs([]);
+        setTournamentInfo({});
         Notification(
           "success",
           "Success",
@@ -180,6 +181,8 @@ const TournamentCreator = () => {
         );
       })
       .catch((err) => {
+        setTournamentInfo({});
+        setTeamIDs([]);
         Notification(
           "error",
           `Eror when creating tournament  + ${
@@ -197,10 +200,14 @@ const TournamentCreator = () => {
     <Col align="center">
       <Popover
         title="Create a new tournament"
-        size="large"
+        overlayStyle={{
+          width: "20vw",
+        }}
         placement="right"
         display="inline-block"
         visible={visible}
+        trigger="click"
+        onVisibleChange={(v) => setVisible(v)}
         content={
           currentForm === 1 ? (
             <CreateTournament
@@ -215,7 +222,7 @@ const TournamentCreator = () => {
               updateTeamIDs={(newTeamID) =>
                 setTeamIDs((prevTeamIDs) => [...prevTeamIDs, newTeamID])
               }
-              fbId={fbId}
+              fbToken={fbToken}
               isSwiss={isSwiss}
             />
           )

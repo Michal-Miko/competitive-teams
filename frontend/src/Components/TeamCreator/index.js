@@ -19,9 +19,9 @@ const validateMessages = {
 };
 
 const TeamCreator = () => {
-  let { currentUser, userData } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
-  const hdrs = { headers: { "firebase-id": fbId } };
+  let { currentToken, currentUser, userData } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
+  const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
   const [playerIDs, setPlayerIDs] = useState({});
   const [playerQueryIDs, setPlayerQueryIDs] = useState({});
@@ -85,7 +85,7 @@ const TeamCreator = () => {
   const handleSearch = (value) => {
     Api.get("/players/search/", {
       headers: {
-        "firebase-id": fbId,
+        "firebase-token": fbToken,
         name: value,
       },
     }).then((result) => {
@@ -153,6 +153,10 @@ const TeamCreator = () => {
         display="inline-block"
         content={teamForm}
         visible={visible}
+        overlayStyle={{
+          width: "20vw",
+        }}
+        onVisibleChange={(v) => setVisible(v)}
       >
         <Button
           className="TeamCreator"

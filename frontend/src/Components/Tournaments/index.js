@@ -20,8 +20,8 @@ const { Panel } = Collapse;
 const { Title } = Typography;
 
 const Tournaments = () => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   const [err, setErr] = useState(null);
   const [tournamentsOnPage, setTournamentsOnPage] = useState(null);
@@ -36,7 +36,7 @@ const Tournaments = () => {
         (currentPage - 1) * pageSize
       }&limit=${pageSize}`,
       {
-        headers: { "firebase-id": fbId, name: searched },
+        headers: { "firebase-token": fbToken, name: searched },
       }
     )
       .then((result) => {
@@ -46,12 +46,12 @@ const Tournaments = () => {
         setTournamentsOnPage(null);
         setErr(err.toString());
       });
-  }, [fbId, currentPage, searched]);
+  }, [fbToken, currentPage, searched]);
 
   useEffect(() => {
     setCurrentPage(1);
     Api.get(`/tournaments_count_by_search/`, {
-      headers: { "firebase-id": fbId, name: searched },
+      headers: { "firebase-token": fbToken, name: searched },
     })
       .then((result) => {
         setAllTournaments(result.data);
@@ -60,7 +60,7 @@ const Tournaments = () => {
         setTournamentsOnPage(null);
         setErr(err.toString());
       });
-  }, [searched, fbId]);
+  }, [searched, fbToken]);
 
   return tournamentsOnPage ? (
     <Layout className="list-background">

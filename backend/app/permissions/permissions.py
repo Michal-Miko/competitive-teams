@@ -1,5 +1,6 @@
 from app.database import crud
 from fastapi import HTTPException, status
+from app.firebase.firebase import verify_token
 
 
 class InvalidRoleException(Exception):
@@ -22,11 +23,12 @@ def is_higher_role(role1, role2):
     return ROLES[role1] >= ROLES[role2]
 
 
-def is_accessible(db, firebase_id, clearance="player"):
-    if firebase_id is None or firebase_id == "null":
+def is_accessible(db, firebase_token, clearance="player"):
+    if firebase_token is None or firebase_token == "null":
         db_role = "guest"
     else:
-        db_player = crud.get_player_by_firebase_id(db, firebase_id)
+        uid = verify_token(firebase_token)
+        db_player = crud.get_player_by_firebase_id(db, uid)
         if db_player is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         db_role = db_player.role
@@ -38,6 +40,6 @@ def permission_denied(clearance):
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=text)
 
 
-def check_for_permission(db, firebase_id, clearance):
-    if not is_accessible(db=db, firebase_id=firebase_id, clearance=clearance):
+def check_for_permission(db, firebase_token, clearance):
+    if not is_accessible(db, firebase_token, clearance):
         permission_denied(clearance=clearance)

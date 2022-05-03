@@ -15,8 +15,8 @@ const { Column, ColumnGroup } = Table;
 const { Meta } = Card;
 
 const Team = ({ id, noactions }) => {
-  let { currentUser, userData } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken, userData } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   // If no id has been passed, check router params
   const { teamid } = useParams();
@@ -26,7 +26,7 @@ const Team = ({ id, noactions }) => {
     ["team", id],
     async () => {
       const res = await Api.get("/teams/" + id, {
-        headers: { "firebase-id": fbId },
+        headers: { "firebase-token": fbToken },
       });
       return res.data;
     },
