@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
             Api.post("/players/", {
               name: user.uid.substr(0, 5),
               description: "Empty",
-              firebase_id: idToken,
+              firebase_token: idToken,
               colour: random_color,
             }).catch((error) =>
               Notification(

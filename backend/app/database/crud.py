@@ -73,11 +73,11 @@ def count_teams(db: Session):
 # Players:
 
 
-def create_player(db: Session, player: schemas.PlayerCreate):
+def create_player(db: Session, player: schemas.PlayerCreate, player_uid):
     db_player = models.Player(
         name=player.name,
         description=player.description,
-        firebase_id=player.firebase_id,
+        firebase_id=player_uid,
         colour=player.colour,
         role="admin",
     )

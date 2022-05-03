@@ -132,13 +132,12 @@ def count_teams_by_search(
 # Players
 @app.post("/api/players/", response_model=schemas.Player)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
-    player_uid = verify_token(player.firebase_id)
-    player.firebase_id = player_uid
+    player_uid = verify_token(player.firebase_token)
     
-    db_player = crud.get_player_by_firebase_id(db, firebase_id=player.firebase_id)
+    db_player = crud.get_player_by_firebase_id(db, firebase_id=player.firebase_token)
     db_player_name = crud.get_player_by_name(db, name=player.name)
     if db_player is None and db_player_name is None:
-        return crud.create_player(db=db, player=player)
+        return crud.create_player(db, player, player_uid)
     if db_player is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
     return db_player
@@ -325,7 +324,7 @@ def link_player_to_team(
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player already in the team")
 
-    firebase_id = verify_token(firebase_token)
+    firebase_id = validate_token(firebase_token)
     if access:
         link()
     else:
@@ -363,7 +362,7 @@ def unlink_player_to_team(
     if access:
         unlink()
     else:
-        firebase_id = verify_token(firebase_token)
+        firebase_id = validate_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
@@ -397,7 +396,7 @@ def set_team_captain(
     if access:
         set_captain()
     else:
-        firebase_id = verify_token(firebase_token)
+        firebase_id = validate_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
