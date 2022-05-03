@@ -195,7 +195,7 @@ def change_role(
     clearance = "admin"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
-    if player_role not in ["admin", "moderator", "player"]:
+    if player_role not in ["admin", "moderator", "player", "guest"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid role: " + str(player_role)
         )

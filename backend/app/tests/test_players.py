@@ -1,24 +1,30 @@
 from test_config import client, restart_db
 
 
-# CREATE
 # DELETE
 # UPDATE
-# CHANGE ROLES
-# READ PLAYERS
-# COUNT PLAYERS
-# SEARCH PLAYERS
-# COUNT PLAYERS BY SEARCH
-# READ PLAYER
-# READ PLAYER BY FIREBASE ID
-# READ PLAYER TEAMS
-# READ PLAYER CAPTAIN TEAMS
 
-def test_1():
-    assert True
+PLAYER_CREATE_SCHEMA = {
+    "name": "Tygrys",
+    "description": "DESC",
+    "colour": "#ffffff",
+    "firebase_id": "admin",
+}
+
+HEADER_WITH_FIREBASE_ID = {
+    "firebase-id": "admin"
+}
+
+PLAYER_SCHEMA = {
+    "id": 1,
+    "role": "admin",
+    "name": "Tygrys",
+    "description": "DESC",
+    "colour": "#ffffff",
+}
 
 
-def test_check_empty():
+def test_no_players_in_db(restart_db):
     response = client.get(
         "/api/players/",
     )
@@ -26,42 +32,47 @@ def test_check_empty():
     assert response.json() == []
 
 
-def test_add():
+def test_create_player():
     response = client.post(
         "/api/players/",
-        json={
-            "name": "Tygrys",
-            "firebase_id": "admin"
-        }
+        json=PLAYER_CREATE_SCHEMA
     )
     assert response.status_code == 200
-    assert response.json() == {
-        'colour': None,
-        'description': None,
-        'id': 1,
-        'name': 'Tygrys',
-        'role': 'admin',
-    }
+    assert response.json() == PLAYER_SCHEMA
 
 
-def test_check_not_empty():
+def test_read_players():
     response = client.get(
         "/api/players/",
     )
     assert response.status_code == 200
     assert response.json() == [
-        {
-            'colour': None,
-            'description': None,
-            'id': 1,
-            'name': 'Tygrys',
-            'role': 'admin',
-        }
+        PLAYER_SCHEMA
     ]
 
-def test_check_empty2(restart_db):
+
+def test_read_players():
     response = client.get(
         "/api/players/",
     )
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json() == [
+        PLAYER_SCHEMA
+    ]
+
+
+def test_read_player_by_id():
+    response = client.get(
+        "/api/players/1",
+    )
+    assert response.status_code == 200
+    assert response.json() == PLAYER_SCHEMA
+
+
+def test_read_player_by_firebase_id():
+    response = client.get(
+        "/api/players/firebase_id/admin",
+        headers=HEADER_WITH_FIREBASE_ID
+    )
+    assert response.status_code == 200
+    assert response.json() == PLAYER_SCHEMA
