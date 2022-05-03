@@ -2,6 +2,7 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException, Header, status
 from sqlalchemy.orm import Session
 from app.database import crud
+from app.database.database import Base, engine
 from app.schemas import schemas
 from app.database.database import SessionLocal
 from app.firebase import firebase
@@ -10,6 +11,7 @@ from app.exceptions import exceptions
 from app.utils.cors import add_cors
 
 
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 add_cors(app)
 
