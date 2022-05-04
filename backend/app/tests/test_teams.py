@@ -19,6 +19,7 @@ TEAM_CREATE_SCHEMA = {
 }
 
 TEAM_UPDATE_SCHEMA = {
+    "name": "Szybcy",
     "description": "Szybcy jak wiatr.",
     "colour": "#7f7f7f",
 }

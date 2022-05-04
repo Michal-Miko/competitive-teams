@@ -34,6 +34,9 @@ def create_team(
 ):
     clearance = "moderator"
     permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    db_team_name = crud.get_team_by_name(db=db, name=team.name)
+    if db_team_name is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
     return crud.create_team(db=db, team=team)
 
 
@@ -58,17 +61,24 @@ def update_team(
     access = permissions.is_accessible(
         db=db, firebase_id=firebase_id, clearance=clearance
     )
+
+    def update():
+        team_check = crud.get_team_by_name(db, name=team.name)
+        old_team = crud.get_team(db, team_id=team_id)
+        if team_check is not None and old_team.name is not team_check.name:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
+        crud.update_team(db, team_id=team_id, team=team)
+    
     if access:
         exceptions.check_for_team_existence(db=db, team_id=team_id)
-        crud.update_team(db, team_id=team_id, team=team)
+        update()
     else:
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
             permissions.permission_denied(clearance)
-        flag = crud.is_player_captain(db, player_id=db_player.id, team_id=team_id)
-        if flag:
-            crud.update_team(db, team_id=team_id, team=team)
+        if crud.is_player_captain(db, player_id=db_player.id, team_id=team_id):
+            update()
         else:
             permissions.permission_denied(clearance)
 
@@ -132,13 +142,11 @@ def count_teams_by_search(
 # Players
 @app.post("/api/players/", response_model=schemas.Player)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
-    db_player = crud.get_player_by_firebase_id(db, firebase_id=player.firebase_id)
-    db_player_name = crud.get_player_by_name(db, name=player.name)
-    if db_player is None and db_player_name is None:
-        return crud.create_player(db=db, player=player)
-    if db_player is None:
+    if crud.get_player_by_name(db, name=player.name) is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
-    return db_player
+    if crud.get_player_by_firebase_id(db, firebase_id=player.firebase_id) is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Firebase_id already used")
+    return crud.create_player(db=db, player=player)
 
 
 @app.delete("/api/players/{player_id}")
