@@ -8,10 +8,8 @@ class PlayerBase(BaseModel):
     colour: Optional[str] = None
 
 
-class PlayerUpdate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    colour: Optional[str] = None
+class PlayerUpdate(PlayerBase):
+    pass
 
 
 class PlayerCreate(PlayerBase):
@@ -32,9 +30,8 @@ class TeamBase(BaseModel):
     colour: Optional[str] = None
 
 
-class TeamUpdate(BaseModel):
-    description: Optional[str] = None
-    colour: Optional[str] = None
+class TeamUpdate(TeamBase):
+    pass
 
 
 class TeamCreate(TeamBase):
@@ -59,13 +56,8 @@ class MatchBase(BaseModel):
     score2: Optional[int] = 0
 
 
-class MatchUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    start_time: Optional[str] = None
-    finished: Optional[bool] = False
-    score1: Optional[int] = 0
-    score2: Optional[int] = 0
+class MatchUpdate(MatchBase):
+    pass
 
 
 class MatchResult(BaseModel):

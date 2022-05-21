@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
-import iso8601
 import itertools
 import random
 import copy
@@ -29,6 +27,7 @@ def delete_team(db: Session, team_id: int):
 
 def update_team(db: Session, team_id: int, team: schemas.TeamUpdate):
     db_team = db.query(models.Team).filter(models.Team.id == team_id).first()
+    db_team.name = team.name
     db_team.colour = team.colour
     db_team.description = team.description
     db.commit()
@@ -81,7 +80,7 @@ def create_player(db: Session, player: schemas.PlayerCreate):
         description=player.description,
         firebase_id=player.firebase_id,
         colour=player.colour,
-        role="player",
+        role="admin",
     )
     db.add(db_player)
     db.commit()
