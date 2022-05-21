@@ -537,7 +537,6 @@ def update_tournament_match(
                 for i in range(0, len(teams_ids), 2):
                     comb.append((perm[i], perm[i + 1]))
                 return comb
-        print("MAKE NEW ROUND ERROR")
 
     if db_tournament.tournament_type == "swiss":
         scoreboard = get_tournament_scoreboard(db=db, tournament_id=tournament_id)

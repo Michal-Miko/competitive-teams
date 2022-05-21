@@ -90,7 +90,6 @@ def test_read_tournament_scoreboard():
     )
     assert response.status_code == 200
     results = response.json()["results"]
-    print(results)
     assert results[1]["match_points"] == 21
     assert results[1]["tournament_points"] == 0.0
     assert results[0]["match_points"] == 37
