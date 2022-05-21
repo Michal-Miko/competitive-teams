@@ -24,6 +24,7 @@ const SignUp = ({ history }) => {
   const onFinish = (values) => {
     app.auth().onAuthStateChanged(() => {
       history.replace("/dashboard/profile");
+      console.log("Auth change signup");
     });
     app
       .auth()

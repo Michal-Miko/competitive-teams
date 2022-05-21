@@ -9,6 +9,7 @@ from app.firebase import firebase
 from app.permissions import permissions
 from app.exceptions import exceptions
 from app.utils.cors import add_cors
+from app.firebase.firebase import default_app, verify_token
 
 
 Base.metadata.create_all(bind=engine)
@@ -29,11 +30,11 @@ def get_db():
 @app.post("/api/teams/", response_model=schemas.Team)
 def create_team(
     team: schemas.TeamCreate,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db=db, firebase_token=firebase_token, clearance=clearance)
     db_team_name = crud.get_team_by_name(db=db, name=team.name)
     if db_team_name is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
@@ -42,10 +43,10 @@ def create_team(
 
 @app.delete("/api/teams/{team_id}")
 def delete_team(
-    team_id: int, firebase_id: str = Header(None), db: Session = Depends(get_db)
+    team_id: int, firebase_token: str = Header(None), db: Session = Depends(get_db)
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_team_existence(db=db, team_id=team_id)
     crud.delete_team(db, team_id)
 
@@ -54,12 +55,13 @@ def delete_team(
 def update_team(
     team_id: int,
     team: schemas.TeamUpdate,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
+    firebase_id = verify_token(firebase_token)
     clearance = "moderator"
     access = permissions.is_accessible(
-        db=db, firebase_id=firebase_id, clearance=clearance
+        db, firebase_token, clearance
     )
 
     def update():
@@ -85,76 +87,77 @@ def update_team(
 
 @app.get("/api/teams/{team_id}", response_model=schemas.Team)
 def read_team(
-    team_id: int, firebase_id: str = Header(None), db: Session = Depends(get_db)
+    team_id: int, firebase_token: str = Header(None), db: Session = Depends(get_db)
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_team_existence(db=db, team_id=team_id)
     return crud.get_team(db, team_id=team_id)
 
 
 @app.get("/api/teams/", response_model=List[schemas.Team])
 def read_teams(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.get_teams(db, skip=skip, limit=limit)
 
 
 @app.get("/api/teams_count/", response_model=int)
 def count_teams(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_teams(db)
 
 
 @app.get("/api/teams/search/", response_model=List[schemas.Team])
 def search_teams(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.search_teams_by_name(db, name=name, skip=skip, limit=limit)
 
 
 @app.get("/api/teams_count_by_search/", response_model=int)
 def count_teams_by_search(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_teams_by_search(db, name)
 
 
 # Players
 @app.post("/api/players/", response_model=schemas.Player)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
+    player_uid = verify_token(player.firebase_token)
     if crud.get_player_by_name(db, name=player.name) is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
-    if crud.get_player_by_firebase_id(db, firebase_id=player.firebase_id) is not None:
+    if crud.get_player_by_firebase_id(db, firebase_id=player.firebase_token) is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Firebase_id already used")
-    return crud.create_player(db=db, player=player)
+    return crud.create_player(db, player, player_uid)
 
 
 @app.delete("/api/players/{player_id}")
 def delete_player(
-    player_id: int, firebase_id: str = Header(None), db: Session = Depends(get_db)
+    player_id: int, firebase_token: str = Header(None), db: Session = Depends(get_db)
 ):
     clearance = "admin"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     crud.delete_player(db, player_id)
 
@@ -163,12 +166,12 @@ def delete_player(
 def update_player(
     player_id: int,
     player: schemas.PlayerUpdate,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "admin"
     access = permissions.is_accessible(
-        db=db, firebase_id=firebase_id, clearance=clearance
+        db, firebase_token, clearance
     )
     def update():
         exceptions.check_for_player_existence(db=db, player_id=player_id)
@@ -178,6 +181,7 @@ def update_player(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
         crud.update_player(db, player_id=player_id, player=player)
 
+    firebase_id = verify_token(firebase_token)
     if access:
         update()
     else:
@@ -197,11 +201,11 @@ def update_player(
 def change_role(
     player_id: int,
     player_role: str = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "admin"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     if player_role not in ["admin", "moderator", "player", "guest"]:
         raise HTTPException(
@@ -212,56 +216,56 @@ def change_role(
 
 @app.get("/api/players/", response_model=List[schemas.Player])
 def read_players(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.get_players(db, skip=skip, limit=limit)
 
 
 @app.get("/api/players_count/", response_model=int)
 def count_players(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_players(db)
 
 
 @app.get("/api/players/search/", response_model=List[schemas.Player])
 def search_players(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.search_players_by_name(db, name=name, skip=skip, limit=limit)
 
 
 @app.get("/api/players_count_by_search/", response_model=int)
 def count_players_by_search(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_players_by_search(db, name)
 
 
 @app.get("/api/players/{player_id}", response_model=schemas.Player)
 def read_player(
-    player_id: int, firebase_id: str = Header(None), db: Session = Depends(get_db)
+    player_id: int, firebase_token: str = Header(None), db: Session = Depends(get_db)
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_player(db, player_id=player_id)
 
@@ -269,11 +273,11 @@ def read_player(
 @app.get("/api/players/firebase_id/{wanted_firebase_id}", response_model=schemas.Player)
 def read_player_by_firebase_id(
     wanted_firebase_id: str,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "player"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     db_player = crud.get_player_by_firebase_id(db, firebase_id=wanted_firebase_id)
     if db_player is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Player not found")
@@ -283,13 +287,13 @@ def read_player_by_firebase_id(
 @app.get("/api/players/teams/{player_id}", response_model=List[schemas.Team])
 def read_player_teams(
     player_id: int,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_player_teams(db, player_id=player_id, skip=skip, limit=limit)
 
@@ -297,13 +301,13 @@ def read_player_teams(
 @app.get("/api/captain/teams/{player_id}", response_model=List[schemas.Team])
 def read_player_captain_teams(
     player_id: int,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_player_captain_teams(db, player_id=player_id, skip=skip, limit=limit)
 
@@ -313,12 +317,12 @@ def read_player_captain_teams(
 def link_player_to_team(
     team_id: int,
     player_id: int,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
     access = permissions.is_accessible(
-        db=db, firebase_id=firebase_id, clearance=clearance
+        db, firebase_token, clearance
     )
 
     def link():
@@ -329,6 +333,7 @@ def link_player_to_team(
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player already in the team")
 
+    firebase_id = verify_token(firebase_token)
     if access:
         link()
     else:
@@ -347,12 +352,12 @@ def link_player_to_team(
 def unlink_player_to_team(
     team_id: int,
     player_id: int,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
     access = permissions.is_accessible(
-        db=db, firebase_id=firebase_id, clearance=clearance
+        db, firebase_token, clearance
     )
 
     def unlink():
@@ -366,6 +371,7 @@ def unlink_player_to_team(
     if access:
         unlink()
     else:
+        firebase_id = verify_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
@@ -381,12 +387,12 @@ def unlink_player_to_team(
 def set_team_captain(
     team_id: int,
     player_id: int,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
     access = permissions.is_accessible(
-        db=db, firebase_id=firebase_id, clearance=clearance
+        db, firebase_token, clearance
     )
 
     def set_captain():
@@ -399,6 +405,7 @@ def set_team_captain(
     if access:
         set_captain()
     else:
+        firebase_id = verify_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
@@ -416,11 +423,11 @@ def create_match(
     match: schemas.MatchCreate,
     team1_id: int = Header(None),
     team2_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_team_existence(db=db, team_id=team1_id)
     exceptions.check_for_team_existence(db=db, team_id=team2_id)
     return crud.create_match(db=db, match=match, team1_id=team1_id, team2_id=team2_id)
@@ -428,36 +435,36 @@ def create_match(
 
 @app.get("/api/matches/", response_model=List[schemas.Match])
 def read_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     matches = crud.get_matches(db, skip=skip, limit=limit)
     return matches
 
 
 @app.get("/api/matches_count/", response_model=int)
 def count_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_matches(db)
 
 
 @app.get("/api/upcoming_matches/", response_model=List[schemas.Match])
 def read_upcoming_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.get_upcoming_matches(db, skip=skip, limit=limit)
 
 
@@ -465,26 +472,26 @@ def read_upcoming_matches(
     "/api/personal_upcoming_matches/{player_id}", response_model=List[schemas.Match]
 )
 def read_upcoming_personal_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     player_id: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_personal_upcoming_matches(db, player_id=player_id, skip=skip, limit=limit)
 
 
 @app.get("/api/count_personal_upcoming_matches/{player_id}", response_model=int)
 def count_upcoming_personal_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     player_id: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.count_personal_upcoming_matches(db, player_id=player_id)
 
@@ -493,62 +500,62 @@ def count_upcoming_personal_matches(
     "/api/personal_finished_matches/{player_id}", response_model=List[schemas.Match]
 )
 def read_finished_personal_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     player_id: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.get_personal_finished_matches(db, player_id=player_id, skip=skip, limit=limit)
 
 
 @app.get("/api/count_personal_finished_matches/{player_id}", response_model=int)
 def count_finished_personal_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     player_id: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_player_existence(db=db, player_id=player_id)
     return crud.count_personal_finished_matches(db, player_id=player_id)
 
 
 @app.get("/api/matches/search/", response_model=List[schemas.Match])
 def search_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.search_matches_by_name(db, name=name, skip=skip, limit=limit)
 
 
 @app.get("/api/matches_count_by_search/", response_model=int)
 def count_matches_by_search(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_matches_by_search(db, name)
 
 
 @app.get("/api/matches/{match_id}", response_model=schemas.Match)
 def read_match(
     match_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_match_existence(db=db, match_id=match_id)
     db_match = crud.get_match(db, match_id=match_id)
     return crud.get_match(db, match_id=match_id)
@@ -558,11 +565,11 @@ def read_match(
 def update_match(
     match: schemas.MatchUpdate,
     match_id: int = None,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_match_existence(db=db, match_id=match_id)
     crud.update_match(db, match_id=match_id, match=match)
 
@@ -571,11 +578,11 @@ def update_match(
 @app.post("/api/tournaments/", response_model=schemas.Tournament)
 def create_tournament(
     tournament: schemas.TournamentCreate,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     if tournament.tournament_type not in [
         "round-robin",
         "swiss",
@@ -614,58 +621,58 @@ def create_tournament(
 
 @app.get("/api/tournaments/", response_model=List[schemas.Tournament])
 def read_tournaments(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.get_tournaments(db, skip=skip, limit=limit)
 
 
 @app.get("/api/tournaments_count/", response_model=int)
 def count_tournaments(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_tournaments(db)
 
 
 @app.get("/api/tournaments/search/", response_model=List[schemas.Tournament])
 def search_tournaments(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.search_tournaments_by_name(db, name=name, skip=skip, limit=limit)
 
 
 @app.get("/api/tournaments_count_by_search/", response_model=int)
 def count_tournaments_by_search(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     name: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     return crud.count_tournaments_by_search(db, name)
 
 
 @app.get("/api/tournaments/{tournament_id}", response_model=schemas.Tournament)
 def read_tournament(
     tournament_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     db_tournament = crud.get_tournament(db, tournament_id=tournament_id)
     if db_tournament is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tournament not found")
@@ -680,11 +687,11 @@ def update_tournament_match(
     match: schemas.MatchResult,
     match_id: int = None,
     tournament_id: int = None,
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "moderator"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     db_tournament = crud.get_tournament(db, tournament_id=tournament_id)
     exceptions.check_for_match_existence(db=db, match_id=match_id)
     if db_tournament is None:
@@ -712,25 +719,25 @@ def update_tournament_match(
 @app.get("/api/tournament/{tournament_id}/matches", response_model=List[schemas.Match])
 def read_tournament_matches(
     tournament_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_matches(db, tournament_id=tournament_id, skip=skip, limit=limit)
 
 
 @app.get("/api/tournament_matches_count/", response_model=int)
 def count_tournament_matches(
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     tournament_id: int = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.count_tournament_matches(db, tournament_id=tournament_id)
 
@@ -742,13 +749,13 @@ def count_tournament_matches(
 )
 def read_tournament_finished_matches(
     tournament_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_finished_matches(db, tournament_id=tournament_id, skip=skip, limit=limit)
 
@@ -759,13 +766,13 @@ def read_tournament_finished_matches(
 )
 def read_tournament_unfinished_matches(
     tournament_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_unfinished_matches(
         db, tournament_id=tournament_id, skip=skip, limit=limit
@@ -778,10 +785,10 @@ def read_tournament_unfinished_matches(
 )
 def read_tournament_scoreboard(
     tournament_id: int = Header(None),
-    firebase_id: str = Header(None),
+    firebase_token: str = Header(None),
     db: Session = Depends(get_db),
 ):
     clearance = "guest"
-    permissions.check_for_permission(db=db, firebase_id=firebase_id, clearance=clearance)
+    permissions.check_for_permission(db, firebase_token, clearance)
     exceptions.check_for_tournament_existence(db=db, tournament_id=tournament_id)
     return crud.get_tournament_scoreboard(db, tournament_id=tournament_id)

@@ -13,7 +13,7 @@ class PlayerUpdate(PlayerBase):
 
 
 class PlayerCreate(PlayerBase):
-    firebase_id: str
+    firebase_token: str
 
 
 class Player(PlayerBase):

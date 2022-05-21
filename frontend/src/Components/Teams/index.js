@@ -21,8 +21,8 @@ const { Panel } = Collapse;
 const { Title } = Typography;
 
 const Teams = () => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
   const [err, setErr] = useState(null);
   const [teamsOnPage, setTeamsOnPage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +34,7 @@ const Teams = () => {
     Api.get(
       `/teams/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
       {
-        headers: { "firebase-id": fbId, name: searched },
+        headers: { "firebase-token": fbToken, name: searched },
       }
     )
       .then((result) => {
@@ -44,12 +44,12 @@ const Teams = () => {
         setTeamsOnPage(null);
         setErr(err.toString());
       });
-  }, [fbId, currentPage, searched]);
+  }, [fbToken, currentPage, searched]);
 
   useEffect(() => {
     setCurrentPage(1);
     Api.get(`/teams_count_by_search/`, {
-      headers: { "firebase-id": fbId, name: searched },
+      headers: { "firebase-token": fbToken, name: searched },
     })
       .then((result) => {
         setAllTeams(result.data);
@@ -58,7 +58,7 @@ const Teams = () => {
         setTeamsOnPage(null);
         setErr(err.toString());
       });
-  }, [searched, fbId]);
+  }, [searched, fbToken]);
 
   return teamsOnPage ? (
     <Layout className="list-background">

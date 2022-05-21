@@ -27,8 +27,8 @@ const validateMessages = {
 };
 
 const MatchCreator = () => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
   const [visible, setVisible] = useState(false);
   const [teamIDs, setTeamIDs] = useState({});
   const [teamQueryIDs, setTeamQueryIDs] = useState({});
@@ -36,7 +36,7 @@ const MatchCreator = () => {
   const onFinish = (values) => {
     const hdrs = {
       headers: {
-        "firebase-id": fbId,
+        "firebase-token": fbToken,
         "team1-id": teamQueryIDs[values.team1name],
         "team2-id": teamQueryIDs[values.team2name],
       },
@@ -77,7 +77,7 @@ const MatchCreator = () => {
   const handleSearch = (value) => {
     Api.get("/teams/search/", {
       headers: {
-        "firebase-id": fbId,
+        "firebase-token": fbToken,
         name: value,
       },
     }).then((result) => {
@@ -161,6 +161,10 @@ const MatchCreator = () => {
         display="inline-block"
         content={matchForm}
         visible={visible}
+        onVisibleChange={(v) => setVisible(v)}
+        overlayStyle={{
+          width: "20vw",
+        }}
       >
         <Button
           className="MatchCreator"

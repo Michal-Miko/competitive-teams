@@ -10,8 +10,8 @@ import { Notification } from "../Util/Notification";
 const { Title, Text } = Typography;
 const { Option } = Select;
 const Player = ({ id }) => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   // If no id has been passed, check router params
   const { playerid } = useParams();
@@ -24,7 +24,7 @@ const Player = ({ id }) => {
   useEffect(() => {
     if (id === null || id === undefined) setErr("No player id passed.");
     else {
-      Api.get("/players/" + id, { headers: { "firebase-id": fbId } })
+      Api.get("/players/" + id, { headers: { "firebase-token": fbToken } })
         .then((response) => {
           if (response.status === 200) {
             setPlayerdata(response.data);
@@ -35,7 +35,7 @@ const Player = ({ id }) => {
           setErr(err.toString());
         });
     }
-  }, [id, fbId]);
+  }, [id, fbToken]);
 
   const updateRole = (value) => {
     console.log(playerdata.id, value);
@@ -43,7 +43,7 @@ const Player = ({ id }) => {
       `/change_role/${playerdata.id}`,
       {},
       {
-        headers: { "player-role": value, "firebase-id": fbId },
+        headers: { "player-role": value, "firebase-token": fbToken },
       }
     )
       .then((response) => {

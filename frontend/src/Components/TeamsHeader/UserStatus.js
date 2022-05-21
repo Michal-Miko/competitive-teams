@@ -11,11 +11,11 @@ const UserStatus = (props) => {
   const [color, setColor] = useState("#3f3f3f");
   const [username, setUsername] = useState(null);
   const [userLetter, setUserLetter] = useState("");
-  const { currentUser, userData } = useContext(AuthContext);
+  const { currentToken, userData } = useContext(AuthContext);
 
   // Update userid on AuthContext change
   useEffect(() => {
-    if (currentUser === null || userData === null) {
+    if (currentToken === null || userData === null) {
       setUserLetter("");
       setUsername(null);
     } else {
@@ -23,7 +23,7 @@ const UserStatus = (props) => {
       setUserLetter(userData.name[0]);
       setColor(userData.colour);
     }
-  }, [currentUser, userData]);
+  }, [currentToken, userData]);
 
   const avatar = (
     <Tooltip title={username}>

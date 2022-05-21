@@ -13,14 +13,16 @@ const { Panel } = Collapse;
 const { Title } = Typography;
 
 const Matches = () => {
-  const { currentUser } = useContext(AuthContext);
-  const fbId = currentUser ? currentUser.uid : null;
+  const { currentToken } = useContext(AuthContext);
+  const fbToken = currentToken ? currentToken : null;
 
   const [matches, setMatches] = useState(null);
   const [err, setErr] = useState(null);
 
   useEffect(() => {
-    Api.get("/upcoming_matches/?limit=5", { headers: { "firebase-id": fbId } })
+    Api.get("/upcoming_matches/?limit=5", {
+      headers: { "firebase-token": fbToken },
+    })
       .then((result) => {
         setMatches(result.data);
       })
@@ -29,7 +31,7 @@ const Matches = () => {
 
         setErr(err.toString());
       });
-  }, [fbId]);
+  }, [fbToken]);
 
   return matches ? (
     <Layout className="list-background">

@@ -74,13 +74,13 @@ def count_teams(db: Session):
 # Players:
 
 
-def create_player(db: Session, player: schemas.PlayerCreate):
+def create_player(db: Session, player: schemas.PlayerCreate, player_uid):
     db_player = models.Player(
         name=player.name,
         description=player.description,
-        firebase_id=player.firebase_id,
+        firebase_id=player_uid,
         colour=player.colour,
-        role="admin",
+        role="player",
     )
     db.add(db_player)
     db.commit()
@@ -537,7 +537,6 @@ def update_tournament_match(
                 for i in range(0, len(teams_ids), 2):
                     comb.append((perm[i], perm[i + 1]))
                 return comb
-        print("MAKE NEW ROUND ERROR")
 
     if db_tournament.tournament_type == "swiss":
         scoreboard = get_tournament_scoreboard(db=db, tournament_id=tournament_id)
