@@ -333,7 +333,7 @@ def link_player_to_team(
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Player already in the team")
 
-    firebase_id = validate_token(firebase_token)
+    firebase_id = verify_token(firebase_token)
     if access:
         link()
     else:
@@ -371,7 +371,7 @@ def unlink_player_to_team(
     if access:
         unlink()
     else:
-        firebase_id = validate_token(firebase_token)
+        firebase_id = verify_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
@@ -405,7 +405,7 @@ def set_team_captain(
     if access:
         set_captain()
     else:
-        firebase_id = validate_token(firebase_token)
+        firebase_id = verify_token(firebase_token)
         exceptions.check_for_team_existence(db=db, team_id=team_id)
         db_player = crud.get_player_by_firebase_id(db, firebase_id=firebase_id)
         if db_player is None:
