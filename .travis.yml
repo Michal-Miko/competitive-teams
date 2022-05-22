@@ -1,3 +1,4 @@
+version: ~> 1.0
 matrix:
   include:
     - language: python
@@ -19,7 +20,7 @@ matrix:
           docker push registry.heroku.com/$HEROKU_BACKEND_APP/web;
           heroku container:release web --app $HEROKU_BACKEND_APP
         on:
-          branch: main
+          branch: ci/cd
 
     - language: node_js
       services:
@@ -52,4 +53,4 @@ matrix:
           docker push registry.heroku.com/$HEROKU_FRONTEND_APP/web;
           heroku container:release web --app $HEROKU_FRONTEND_APP
         on:
-          branch: main
+          branch: ci/cd
