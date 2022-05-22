@@ -1,55 +1,55 @@
+version: ~> 1.0
 matrix:
   include:
     - language: python
       services:
         - docker
       before_install:
-        - curl https://cli-assets.heroku.com/install.sh | sh  
-        - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
+        - curl https://cli-assets.heroku.com/install.sh | sh
+        - echo $HEROKU_API_KEY | docker login -u=_ --password-stdin registry.heroku.com
+        - openssl aes-256-cbc -K $encrypted_0265e5a5b063_key -iv $encrypted_0265e5a5b063_iv -in backend/saf.json.enc -out backend/saf.json -d
 
       script:
-        - docker build -t $DOCKER_USERNAME/backend ./backend
-        - docker tag $DOCKER_USERNAME/backend registry.heroku.com/$HEROKU_BACKEND_APP/web
+        - docker build -t ct/backend ./backend
+        - docker tag ct/backend registry.heroku.com/$HEROKU_BACKEND_APP/web
 
       deploy:
         provider: script
-        script: 
-          docker push $DOCKER_USERNAME/backend;
+        script:
+          docker push ct/backend;
           docker push registry.heroku.com/$HEROKU_BACKEND_APP/web;
           heroku container:release web --app $HEROKU_BACKEND_APP
         on:
-          branch: main
+          branch: develop
 
     - language: node_js
       services:
         - docker
       before_install:
-        - curl https://cli-assets.heroku.com/install.sh | sh  
-        - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-        - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
-
+        - curl https://cli-assets.heroku.com/install.sh | sh
+        - echo $HEROKU_API_KEY | docker login -u=_ --password-stdin registry.heroku.com
 
       script:
         - >
-          docker build 
-          --build-arg react_app_firebase_key=$REACT_APP_FIREBASE_KEY
-          --build-arg react_app_firebase_domain=$REACT_APP_FIREBASE_DOMAIN
-          --build-arg react_app_firebase_database=$REACT_APP_FIREBASE_DATABASE
+          docker build
+          --build-arg react_app_firebase_apikey=$REACT_APP_FIREBASE_APIKEY
+          --build-arg react_app_firebase_authdomain=$REACT_APP_FIREBASE_AUTHDOMAIN
           --build-arg react_app_firebase_project_id=$REACT_APP_FIREBASE_PROJECT_ID
           --build-arg react_app_firebase_storage_bucket=$REACT_APP_FIREBASE_STORAGE_BUCKET
-          --build-arg react_app_firebase_sender_id=$REACT_APP_FIREBASE_SENDER_ID
-          --build-arg frontend_name=$FRONTEND_NAME
+          --build-arg react_app_firebase_messagingsenderid=$REACT_APP_FIREBASE_MESSAGINGSENDERID
+          --build-arg react_app_firebase_appid=$REACT_APP_FIREBASE_APPID
+          --build-arg react_app_firebase_measurementid=$REACT_APP_FIREBASE_MEASUREMENTID
+          --build-arg frontend_name=$HEROKU_FRONTEND_APP
           --build-arg backend_url=$BACKEND_URL
-          -t $DOCKER_USERNAME/frontend
+          -t ct/frontend
           ./frontend
-        - docker tag $DOCKER_USERNAME/frontend registry.heroku.com/$HEROKU_FRONTEND_APP/web
+        - docker tag ct/frontend registry.heroku.com/$HEROKU_FRONTEND_APP/web
 
-      deploy:   
+      deploy:
         provider: script
-        script: 
-          docker push $DOCKER_USERNAME/frontend;
+        script:
+          docker push ct/frontend;
           docker push registry.heroku.com/$HEROKU_FRONTEND_APP/web;
           heroku container:release web --app $HEROKU_FRONTEND_APP
         on:
-          branch: main
+          branch: develop

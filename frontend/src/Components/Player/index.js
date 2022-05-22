@@ -38,7 +38,6 @@ const Player = ({ id }) => {
   }, [id, fbToken]);
 
   const updateRole = (value) => {
-    console.log(playerdata.id, value);
     Api.patch(
       `/change_role/${playerdata.id}`,
       {},

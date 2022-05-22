@@ -6,8 +6,8 @@ set -e
 export DATABASE_URL=sqlite:///:memory:
 # Tests
 source ./backend/env/bin/activate
-cd backend
-python3 -m pytest -vv app/tests
-cd ..
 
+pushd backend
+python3 -m pytest -vv app/tests
+popd
 

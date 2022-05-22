@@ -13,20 +13,23 @@ RUN npm install react-scripts@3.4.1 -g
 # add app
 COPY . ./
 
-ARG react_app_firebase_key
-ARG react_app_firebase_domain
-ARG react_app_firebase_database
+ARG react_app_firebase_apikey
+ARG react_app_firebase_authdomain
 ARG react_app_firebase_project_id
 ARG react_app_firebase_storage_bucket
-ARG react_app_firebase_sender_id
+ARG react_app_firebase_messagingsenderid
+ARG react_app_firebase_appid
+ARG react_app_firebase_measurementid
+
 
 # build app
-RUN REACT_APP_FIREBASE_KEY=$react_app_firebase_key \
-    REACT_APP_FIREBASE_DOMAIN=$react_app_firebase_domain \
-    REACT_APP_FIREBASE_DATABASE=$react_app_firebase_database \
+RUN REACT_APP_FIREBASE_APIKEY=$react_app_firebase_apikey \
+    REACT_APP_FIREBASE_AUTHDOMAIN=$react_app_firebase_authdomain \
     REACT_APP_FIREBASE_PROJECT_ID=$react_app_firebase_project_id \
     REACT_APP_FIREBASE_STORAGE_BUCKET=$react_app_firebase_storage_bucket \
-    REACT_APP_FIREBASE_SENDER_ID=$react_app_firebase_sender_id \
+    REACT_APP_FIREBASE_MESSAGINGSENDERID=$react_app_firebase_messagingsenderid \
+    REACT_APP_FIREBASE_APPID=$react_app_firebase_appid \
+    REACT_APP_FIREBASE_MEASUREMENTID=$react_app_firebase_measurementid \
     npm run build
 
 # Stage 1, run nginx

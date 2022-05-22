@@ -145,11 +145,13 @@ def count_teams_by_search(
 @app.post("/api/players/", response_model=schemas.Player)
 def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     player_uid = verify_token(player.firebase_token)
-    if crud.get_player_by_name(db, name=player.name) is not None:
+    db_player = crud.get_player_by_firebase_id(db, firebase_id=player_uid)
+    db_player_name = crud.get_player_by_name(db, player.name)
+    if db_player is None and db_player_name is None:
+        return crud.create_player(db, player)
+    if db_player is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
-    if crud.get_player_by_firebase_id(db, firebase_id=player.firebase_token) is not None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Firebase_id already used")
-    return crud.create_player(db, player, player_uid)
+    return db_player
 
 
 @app.delete("/api/players/{player_id}")
