@@ -21,7 +21,7 @@ ARG react_app_firebase_storage_bucket
 ARG react_app_firebase_sender_id
 
 # build app
-RUN REACT_APP_FIREBASE_KEY=$react_app_firebase_key \
+RUN REACT_APP_FIREBASE_APIKEY=$react_app_firebase_apikey \
     REACT_APP_FIREBASE_DOMAIN=$react_app_firebase_domain \
     REACT_APP_FIREBASE_DATABASE=$react_app_firebase_database \
     REACT_APP_FIREBASE_PROJECT_ID=$react_app_firebase_project_id \

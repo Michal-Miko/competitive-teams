@@ -32,7 +32,7 @@ matrix:
       script:
         - >
           docker build
-          --build-arg react_app_firebase_key=$REACT_APP_FIREBASE_KEY
+          --build-arg react_app_firebase_apikey=$REACT_APP_FIREBASE_APIKEY
           --build-arg react_app_firebase_domain=$REACT_APP_FIREBASE_DOMAIN
           --build-arg react_app_firebase_database=$REACT_APP_FIREBASE_DATABASE
           --build-arg react_app_firebase_project_id=$REACT_APP_FIREBASE_PROJECT_ID
