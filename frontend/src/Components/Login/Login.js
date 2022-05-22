@@ -22,7 +22,6 @@ const tailLayout = {
 const LogIn = ({ history }) => {
   const onFinish = (values) => {
     app.auth().onAuthStateChanged(() => {
-      console.log("Auth change email");
       history.replace("/dashboard/profile");
     });
     app
@@ -40,7 +39,6 @@ const LogIn = ({ history }) => {
 
   const onFinishGoogle = () => {
     app.auth().onAuthStateChanged(() => {
-      console.log("Auth change google");
       history.replace("/dashboard/profile");
     });
     signInWithGoogle().then(() => {

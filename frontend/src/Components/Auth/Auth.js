@@ -52,7 +52,6 @@ export const AuthProvider = ({ children }) => {
     app.auth().onAuthStateChanged((user) => {
       setCurrentUser(user);
       setPending(false);
-      console.log("Auth change state");
 
       if (user) {
         user
