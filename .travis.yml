@@ -5,6 +5,7 @@ matrix:
       services:
         - docker
       before_install:
+        - curl https://cli-assets.heroku.com/install.sh | sh
         - echo $HEROKU_API_KEY | docker login -u=_ --password-stdin registry.heroku.com
         - openssl aes-256-cbc -K $encrypted_0265e5a5b063_key -iv $encrypted_0265e5a5b063_iv -in backend/saf.json.enc -out backend/saf.json -d
 
@@ -25,6 +26,7 @@ matrix:
       services:
         - docker
       before_install:
+        - curl https://cli-assets.heroku.com/install.sh | sh
         - echo $HEROKU_API_KEY | docker login -u=_ --password-stdin registry.heroku.com
 
       script:
@@ -36,7 +38,7 @@ matrix:
           --build-arg react_app_firebase_project_id=$REACT_APP_FIREBASE_PROJECT_ID
           --build-arg react_app_firebase_storage_bucket=$REACT_APP_FIREBASE_STORAGE_BUCKET
           --build-arg react_app_firebase_sender_id=$REACT_APP_FIREBASE_SENDER_ID
-          --build-arg frontend_name=$FRONTEND_NAME
+          --build-arg frontend_name=$HEROKU_FRONTEND_APP
           --build-arg backend_url=$BACKEND_URL
           -t ct/frontend
           ./frontend
