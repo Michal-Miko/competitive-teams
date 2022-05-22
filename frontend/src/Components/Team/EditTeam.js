@@ -1,9 +1,18 @@
 import React, { useContext, useState } from "react";
+import {
+  Popover,
+  notification,
+  Button,
+  Input,
+  Col,
+  Form,
+  Space,
+  AutoComplete,
+} from "antd";
 import { useQueryClient } from "react-query";
-import { Popover, Button, Col, Form, Input, Space } from "antd";
 import "./index.css";
 import { AuthContext } from "../Auth/Auth";
-import { Notification } from "../Util/Notification";
+
 import { Api } from "../../Api";
 
 const layout = {
@@ -16,13 +25,15 @@ const validateMessages = {
   required: "${label} is required!",
 };
 
-const ResolveTournamentMatch = ({
-  tournamentID,
-  matchID,
-  teamAName,
-  teamBName,
-}) => {
-  let { currentToken } = useContext(AuthContext);
+const openNotificationWithIcon = (type, title, msg) => {
+  notification[type]({
+    message: title,
+    description: msg,
+  });
+};
+
+const EditTeam = ({ teamData }) => {
+  let { currentToken, userData } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
   const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
@@ -31,29 +42,32 @@ const ResolveTournamentMatch = ({
 
   const onFinish = (values) => {
     Api.patch(
-      `/tournaments/${tournamentID}/input_match_result?match_id=${matchID}`,
+      "/teams/" + teamData.id,
       {
-        score1: values.ascore,
-        score2: values.bscore,
+        name: values.name,
+        description: values.description,
       },
       hdrs
     )
       .then(() => {
-        Notification("success", "Match resolved successfully");
-        queryClient.refetchQueries(["tournament", tournamentID]);
-        queryClient.refetchQueries(["scoreboard", tournamentID]);
-        queryClient.refetchQueries(["finished", tournamentID]);
-        queryClient.refetchQueries(["unfinished", tournamentID]);
+        openNotificationWithIcon(
+          "success",
+          "Success",
+          "Team updated successfully."
+        );
+        queryClient.refetchQueries(["team", teamData.id]);
+        queryClient.refetchQueries(["teams", currentToken, userData]);
+        queryClient.refetchQueries(["capTeams", currentToken, userData]);
       })
-      .catch((err) =>
-        Notification(
+      .catch((err) => {
+        openNotificationWithIcon(
           "error",
-          "Eror when resolving match " + matchID,
+          "Could not edit the team",
           err.response && err.response.data.detail
             ? err.response.data.detail
             : err.message
-        )
-      );
+        );
+      });
     setVisible(false);
   };
 
@@ -63,22 +77,19 @@ const ResolveTournamentMatch = ({
       name="nest-messages"
       onFinish={onFinish}
       validateMessages={validateMessages}
+      initialValues={{ name: teamData.name, description: teamData.description }}
     >
-      <Form.Item
-        name="ascore"
-        label={`${teamAName} score`}
-        rules={[{ required: true }]}
-      >
-        <Input type="number" min={0} step={1} />
+      <Form.Item name="name" label={`Team name`} rules={[{ required: true }]}>
+        <Input />
       </Form.Item>
       <Form.Item
-        name="bscore"
-        label={`${teamBName} score`}
+        name="description"
+        label="About the team"
         rules={[{ required: true }]}
       >
-        <Input type="number" min={0} step={1} />
+        <Input />
       </Form.Item>
-      <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
+      <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
         <Space size="middle">
           <Button type="primary" htmlType="submit">
             Submit
@@ -95,7 +106,7 @@ const ResolveTournamentMatch = ({
     <Col align="center">
       <Popover
         placement="top"
-        title="Resolve match"
+        title="Edit Team"
         trigger="click"
         display="inline-block"
         content={teamForm}
@@ -111,11 +122,11 @@ const ResolveTournamentMatch = ({
             setVisible(true);
           }}
         >
-          Resolve
+          Edit Team
         </Button>
       </Popover>
     </Col>
   );
 };
 
-export default ResolveTournamentMatch;
+export default EditTeam;

@@ -1,6 +1,15 @@
 import React, { useContext, useState } from "react";
 import { useQueryClient } from "react-query";
-import { Popover, Button, Col, Form, Input, Space, DatePicker } from "antd";
+import {
+  Popover,
+  Button,
+  Col,
+  Form,
+  Input,
+  Space,
+  DatePicker,
+  Divider,
+} from "antd";
 import moment from "moment";
 import "./index.css";
 import { AuthContext } from "../Auth/Auth";
@@ -17,14 +26,14 @@ const validateMessages = {
   required: "${label} is required!",
 };
 
-const ModifyTournamentMatch = ({
-  tournamentID,
+const ModifyMatch = ({
   matchID,
   name,
   time,
   description,
   score1,
   score2,
+  resolve,
 }) => {
   let { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
@@ -40,24 +49,31 @@ const ModifyTournamentMatch = ({
         name: values.name,
         description: description,
         start_time: values.time,
-        finished: false,
+        finished: resolve,
         score1: score1,
         score2: score2,
       },
       hdrs
     )
-      .then(() => Notification("success", "Match modified successfully"))
+      .then(() =>
+        Notification(
+          "success",
+          "Match " + (resolve ? "resolved" : "modified") + " successfully"
+        )
+      )
       .catch((err) =>
         Notification(
           "error",
-          "Eror when modifying tournament " + values.name,
+          "Eror when " +
+            (resolve ? "resolving" : "modifying") +
+            " match " +
+            values.name,
           err.response && err.response.data.detail
             ? err.response.data.detail
             : err.message
         )
       );
     setVisible(false);
-    queryClient.refetchQueries(["unfinished", tournamentID]);
   };
 
   const teamForm = (
@@ -68,22 +84,40 @@ const ModifyTournamentMatch = ({
       validateMessages={validateMessages}
       initialValues={{ name: name, time: moment(time) }}
     >
-      <Form.Item name="name" label={`Match name`} rules={[{ required: true }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name="time" label={`Start time`} rules={[{ required: true }]}>
-        <DatePicker showTime format="YYYY-MM-DD HH:mm" />
-      </Form.Item>
-      <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-        <Space size="middle">
-          <Button type="primary" htmlType="submit">
-            Submit
-          </Button>
-          <Button type="primary" onClick={() => setVisible(false)}>
-            Cancel
-          </Button>
-        </Space>
-      </Form.Item>
+      resolve ? (
+      <React.Fragment>
+        <Button danger type="primary">
+          foo
+        </Button>
+      </React.Fragment>
+      ) : (
+      <React.Fragment>
+        <Form.Item
+          name="name"
+          label={`Match name`}
+          rules={[{ required: true }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="time"
+          label={`Start time`}
+          rules={[{ required: true }]}
+        >
+          <DatePicker showTime format="YYYY-MM-DD HH:mm" />
+        </Form.Item>
+        <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
+          <Space size="middle">
+            <Button type="primary" htmlType="submit">
+              Submit
+            </Button>
+            <Button type="primary" onClick={() => setVisible(false)}>
+              Cancel
+            </Button>
+          </Space>
+        </Form.Item>
+      </React.Fragment>
+      )
     </Form>
   );
 
@@ -114,4 +148,4 @@ const ModifyTournamentMatch = ({
   );
 };
 
-export default ModifyTournamentMatch;
+export default ModifyMatch;

@@ -1,11 +1,13 @@
 import React, { useContext } from "react";
 import { useQuery } from "react-query";
-import { Typography, Card, Table, Spin, Space } from "antd";
+import { Typography, Card, Table, Spin, Space, Row, Col } from "antd";
 import { useParams } from "react-router-dom";
 import "./index.css";
 
 import { AuthContext } from "../Auth/Auth";
 import { Api } from "../../Api";
+import EditTeam from "./EditTeam";
+import DeleteTeam from "./DeleteTeam";
 import AddPlayer from "./AddPlayer";
 import RemovePlayer from "./RemovePlayer";
 import MakeCaptain from "./MakeCaptain";
@@ -49,13 +51,9 @@ const Team = ({ id, noactions }) => {
         pagination={false}
         bordered={true}
       >
-        <ColumnGroup title="Captain" align="center">
-          <Column title="Name" dataIndex="name" key="playername" />
-          <Column
-            title="Description"
-            dataIndex="description"
-            key="playerdesc"
-          />
+        <ColumnGroup title="Team Captain" align="center">
+          <Column title="Name" dataIndex="name" key="capname" />
+          <Column title="Bio" dataIndex="description" key="capdesc" />
         </ColumnGroup>
       </Table>
       <Table
@@ -89,9 +87,19 @@ const Team = ({ id, noactions }) => {
           ) : null}
         </ColumnGroup>
       </Table>
-      {userData ? (
+      {userData && !noactions ? (
         <Card>
-          <AddPlayer teamid={id} />
+          <Row gutter={4} justify="center">
+            <Col>
+              <AddPlayer teamid={id} />
+            </Col>
+            <Col>
+              <EditTeam teamData={teamData} />
+            </Col>
+            <Col>
+              <DeleteTeam teamid={id} />
+            </Col>
+          </Row>
         </Card>
       ) : null}
       <Card>

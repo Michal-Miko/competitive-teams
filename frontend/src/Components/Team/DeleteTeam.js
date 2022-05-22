@@ -20,11 +20,6 @@ const layout = {
   wrapperCol: { span: 16 },
 };
 
-const validateMessages = {
-  // eslint-disable-next-line
-  required: "${label} is required!",
-};
-
 const openNotificationWithIcon = (type, title, msg) => {
   notification[type]({
     message: title,
@@ -32,7 +27,7 @@ const openNotificationWithIcon = (type, title, msg) => {
   });
 };
 
-const AddPlayer = ({ teamid }) => {
+const DeleteTeam = ({ teamid }) => {
   let { currentToken, userData } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
   const hdrs = { headers: { "firebase-token": fbToken } };
@@ -42,37 +37,14 @@ const AddPlayer = ({ teamid }) => {
 
   const queryClient = useQueryClient();
 
-  const handleSearch = (value) => {
-    Api.get("/players/search/", {
-      headers: {
-        "firebase-token": fbToken,
-        name: value,
-      },
-    }).then((result) => {
-      setPlayerIDs(
-        result.data.reduce((acc, { id, name }) => {
-          acc[name] = id;
-          return acc;
-        }, {})
-      );
-      setPlayerQueryIDs({
-        ...playerQueryIDs,
-        ...result.data.reduce((acc, { id, name }) => {
-          acc[name] = id;
-          return acc;
-        }, {}),
-      });
-    });
-  };
-
   const onFinish = (values) => {
     values.playerid = playerQueryIDs[values.player];
-    Api.put("/players/" + teamid + "?player_id=" + values.playerid, {}, hdrs)
+    Api.delete("/teams/" + teamid, {}, hdrs)
       .then(() => {
         openNotificationWithIcon(
           "success",
           "Success",
-          "Player " + values.player + " has been added to the team."
+          "Team deleted successfully."
         );
         queryClient.refetchQueries(["team", teamid]);
         queryClient.refetchQueries(["teams", currentToken, userData]);
@@ -81,7 +53,7 @@ const AddPlayer = ({ teamid }) => {
       .catch((err) => {
         openNotificationWithIcon(
           "error",
-          "Error when adding player to the team",
+          "Error when deleting the team",
           err.response && err.response.data.detail
             ? err.response.data.detail
             : err.message
@@ -91,29 +63,11 @@ const AddPlayer = ({ teamid }) => {
   };
 
   const playerForm = (
-    <Form
-      {...layout}
-      name="nest-messages"
-      onFinish={onFinish}
-      validateMessages={validateMessages}
-    >
-      <Form.Item name="player" label="Player" rules={[{ required: true }]}>
-        <AutoComplete
-          style={{ width: 150 }}
-          onSearch={handleSearch}
-          placeholder="input here"
-        >
-          {Object.keys(playerIDs).map((player) => (
-            <Option key={player} value={player}>
-              {player}
-            </Option>
-          ))}
-        </AutoComplete>
-      </Form.Item>
+    <Form {...layout} name="nest-messages" onFinish={onFinish}>
       <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>
         <Space size="middle">
-          <Button type="primary" htmlType="submit">
-            Submit
+          <Button danger type="primary" htmlType="submit">
+            Confirm
           </Button>
           <Button type="primary" onClick={() => setVisible(false)}>
             Cancel
@@ -127,27 +81,24 @@ const AddPlayer = ({ teamid }) => {
     <Col align="center">
       <Popover
         placement="top"
-        title="Add a player to the team"
+        title="Are you sure you want to delete this team?"
         trigger="click"
         display="inline-block"
         content={playerForm}
         visible={visible}
-        onVisibleChange={(v) => setVisible(v)}
-        overlayStyle={{
-          width: "15vw",
-        }}
       >
         <Button
+          danger
           type="primary"
           onClick={() => {
             setVisible(true);
           }}
         >
-          Add player
+          Delete Team
         </Button>
       </Popover>
     </Col>
   );
 };
 
-export default AddPlayer;
+export default DeleteTeam;

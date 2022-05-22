@@ -60,7 +60,7 @@ const Profile = () => {
           <Text editable={{ onChange: updateName }}>{name}</Text>
         </p>
         <p>
-          <Text strong>Description: </Text>{" "}
+          <Text strong>Bio: </Text>{" "}
           <Text editable={{ onChange: updateDesc }}>{desc}</Text>
         </p>
         <p>
