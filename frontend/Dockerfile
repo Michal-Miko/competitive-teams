@@ -13,7 +13,7 @@ RUN npm install react-scripts@3.4.1 -g
 # add app
 COPY . ./
 
-ARG react_app_firebase_key
+ARG react_app_firebase_apikey
 ARG react_app_firebase_domain
 ARG react_app_firebase_database
 ARG react_app_firebase_project_id

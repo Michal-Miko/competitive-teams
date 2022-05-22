@@ -25,7 +25,7 @@ We've provided a simple bash script for starting and combining the outputs of bo
     <li>Create and configure a new Google Firebase project.</li>
     <li>Export the environmental variables from your Google Firebase project and place them in the <code>frontend/.env.local</code>file with the following syntax:
         <ul>
-            <li><code>REACT_APP_FIREBASE_KEY=apiKey</code></li>
+            <li><code>REACT_APP_FIREBASE_APIKEY=apiKey</code></li>
             <li><code>REACT_APP_FIREBASE_DOMAIN=authDomain</code></li>
             <li><code>REACT_APP_FIREBASE_DATABASE=projectId</code></li>
             <li><code>REACT_APP_FIREBASE_PROJECT_ID=storageBucket</code></li>
