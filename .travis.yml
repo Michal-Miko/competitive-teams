@@ -6,7 +6,8 @@ matrix:
         - docker
       before_install:
         - curl https://cli-assets.heroku.com/install.sh | sh
-        - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
+        - heroku container:login
+        - echo $(heroku auth:token) | docker login -u=_ --password-stdin registry.heroku.com
         - openssl aes-256-cbc -K $encrypted_0265e5a5b063_key -iv $encrypted_0265e5a5b063_iv -in backend/saf.json.enc -out backend/saf.json -d
 
       script:
@@ -27,7 +28,8 @@ matrix:
         - docker
       before_install:
         - curl https://cli-assets.heroku.com/install.sh | sh
-        - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
+        - heroku container:login
+        - echo $(heroku auth:token) | docker login -u=_ --password-stdin registry.heroku.com
 
       script:
         - >
