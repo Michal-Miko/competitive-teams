@@ -8,8 +8,8 @@ BACKEND_PREFIX="\033[38;5;27m BACKEND__|\033[0m"
 
 # Optional -- db:
 docker run --rm -d --network host --name psql -e POSTGRES_PASSWORD=passwd postgres && \
-    echo "Waiting for 15s for the postgres container to start up" && sleep 15 || \
-    echo "Error starting postgresql container, is it already running?"
+    echo "Waiting 15s for the postgres container to start up" && sleep 15 || \
+    echo "Non-zero exit when starting postgresql container, assuming the DB is running..."
 
 # Frontend
 export REACT_APP_BACKEND_URL=http://localhost:8000/api

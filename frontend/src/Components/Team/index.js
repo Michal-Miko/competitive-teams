@@ -49,13 +49,9 @@ const Team = ({ id, noactions }) => {
         pagination={false}
         bordered={true}
       >
-        <ColumnGroup title="Captain" align="center">
+        <ColumnGroup title="Team Captain" align="center">
           <Column title="Name" dataIndex="name" key="playername" />
-          <Column
-            title="Description"
-            dataIndex="description"
-            key="playerdesc"
-          />
+          <Column title="Bio" dataIndex="description" key="playerdesc" />
         </ColumnGroup>
       </Table>
       <Table
@@ -66,11 +62,7 @@ const Team = ({ id, noactions }) => {
       >
         <ColumnGroup title="Players" align="center">
           <Column title="Name" dataIndex="name" key="playername" />
-          <Column
-            title="Description"
-            dataIndex="description"
-            key="playerdesc"
-          />
+          <Column title="Bio" dataIndex="description" key="playerdesc" />
           {!noactions ? (
             <Column
               title="Actions"
@@ -95,7 +87,7 @@ const Team = ({ id, noactions }) => {
         </Card>
       ) : null}
       <Card>
-        <Meta title="Description" description={teamData.description} />
+        <Meta title="About the team" description={teamData.description} />
       </Card>
     </div>
   ) : err ? (
