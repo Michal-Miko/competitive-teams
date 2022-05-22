@@ -5,10 +5,10 @@ matrix:
       services:
         - docker
       before_install:
-        - curl https://cli-assets.heroku.com/install.sh | sh  
+        - curl https://cli-assets.heroku.com/install.sh | sh
         - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
         - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
-        - openssl aes-256-cbc -K $encrypted_18df8daa10b9_key -iv $encrypted_18df8daa10b9_iv -in saf.json.enc -out saf.json -d
+        - openssl aes-256-cbc -K $encrypted_0265e5a5b063_key -iv $encrypted_0265e5a5b063_iv -in backend/saf.json.enc -out backend/saf.json -d
 
       script:
         - docker build -t $DOCKER_USERNAME/backend ./backend
@@ -16,7 +16,7 @@ matrix:
 
       deploy:
         provider: script
-        script: 
+        script:
           docker push $DOCKER_USERNAME/backend;
           docker push registry.heroku.com/$HEROKU_BACKEND_APP/web;
           heroku container:release web --app $HEROKU_BACKEND_APP
@@ -27,13 +27,13 @@ matrix:
       services:
         - docker
       before_install:
-        - curl https://cli-assets.heroku.com/install.sh | sh  
+        - curl https://cli-assets.heroku.com/install.sh | sh
         - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
         - docker login -u $HEROKU_USERNAME --password=$(heroku auth:token) registry.heroku.com
 
       script:
         - >
-          docker build 
+          docker build
           --build-arg react_app_firebase_key=$REACT_APP_FIREBASE_KEY
           --build-arg react_app_firebase_domain=$REACT_APP_FIREBASE_DOMAIN
           --build-arg react_app_firebase_database=$REACT_APP_FIREBASE_DATABASE
@@ -46,9 +46,9 @@ matrix:
           ./frontend
         - docker tag $DOCKER_USERNAME/frontend registry.heroku.com/$HEROKU_FRONTEND_APP/web
 
-      deploy:   
+      deploy:
         provider: script
-        script: 
+        script:
           docker push $DOCKER_USERNAME/frontend;
           docker push registry.heroku.com/$HEROKU_FRONTEND_APP/web;
           heroku container:release web --app $HEROKU_FRONTEND_APP

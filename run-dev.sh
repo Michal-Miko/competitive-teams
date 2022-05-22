@@ -10,7 +10,6 @@ BACKEND_PREFIX="\033[38;5;27m BACKEND__|\033[0m"
 docker run --rm -d --network host --name psql -e POSTGRES_PASSWORD=passwd postgres && \
     echo "Waiting for 15s for the postgres container to start up" && sleep 15 || \
     echo "Error starting postgresql container, is it already running?"
-export DATABASE_URL=postgresql://postgres:@localhost/postgres
 
 # Frontend
 export REACT_APP_BACKEND_URL=http://localhost:8000/api
@@ -18,7 +17,9 @@ npm start --prefix frontend 2>&1 | awk '{ print pfx, $0}' pfx="$FRONTEND_PREFIX"
 
 # Backend
 source ./backend/env/bin/activate
-uvicorn --use-colors --app-dir backend --host 127.0.0.1 app.main:app --reload 2>&1 | awk '{ print pfx, $0}' pfx="$BACKEND_PREFIX"
+export DATABASE_URL=postgresql://postgres:@localhost/postgres
+export GOOGLE_APPLICATION_CREDENTIALS="backend/saf.json"
+uvicorn --use-colors --app-dir backend --host 127.0.0.1 app.main:app --reload 2>&1 | awk -W interactive '{ print pfx, $0}' pfx="$BACKEND_PREFIX"
 
 # Kill the background jobs on exit
 trap "trap - SIGTERM && kill $(jobs -p)" SIGINT SIGTERM EXIT
