@@ -33,11 +33,12 @@ matrix:
         - >
           docker build
           --build-arg react_app_firebase_apikey=$REACT_APP_FIREBASE_APIKEY
-          --build-arg react_app_firebase_domain=$REACT_APP_FIREBASE_DOMAIN
-          --build-arg react_app_firebase_database=$REACT_APP_FIREBASE_DATABASE
+          --build-arg react_app_firebase_authdomain=$REACT_APP_FIREBASE_AUTHDOMAIN
           --build-arg react_app_firebase_project_id=$REACT_APP_FIREBASE_PROJECT_ID
           --build-arg react_app_firebase_storage_bucket=$REACT_APP_FIREBASE_STORAGE_BUCKET
-          --build-arg react_app_firebase_sender_id=$REACT_APP_FIREBASE_SENDER_ID
+          --build-arg react_app_firebase_messagingsenderid=$REACT_APP_FIREBASE_MESSAGINGSENDERID
+          --build-arg react_app_firebase_appid=$REACT_APP_FIREBASE_APPID
+          --build-arg react_app_firebase_measurementid=$REACT_APP_FIREBASE_MEASUREMENTID
           --build-arg frontend_name=$HEROKU_FRONTEND_APP
           --build-arg backend_url=$BACKEND_URL
           -t ct/frontend
