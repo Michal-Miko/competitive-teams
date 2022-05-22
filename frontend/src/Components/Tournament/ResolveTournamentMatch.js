@@ -22,9 +22,9 @@ const ResolveTournamentMatch = ({
   teamAName,
   teamBName,
 }) => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
-  const hdrs = { headers: { "firebase-id": fbId } };
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
+  const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
 
   const queryClient = useQueryClient();
@@ -38,7 +38,13 @@ const ResolveTournamentMatch = ({
       },
       hdrs
     )
-      .then(() => Notification("success", "Match resolved successfully"))
+      .then(() => {
+        Notification("success", "Match resolved successfully");
+        queryClient.refetchQueries(["tournament", tournamentID]);
+        queryClient.refetchQueries(["scoreboard", tournamentID]);
+        queryClient.refetchQueries(["finished", tournamentID]);
+        queryClient.refetchQueries(["unfinished", tournamentID]);
+      })
       .catch((err) =>
         Notification(
           "error",
@@ -49,10 +55,6 @@ const ResolveTournamentMatch = ({
         )
       );
     setVisible(false);
-    queryClient.refetchQueries(["tournament", tournamentID]);
-    queryClient.refetchQueries(["scoreboard", tournamentID]);
-    queryClient.refetchQueries(["finished", tournamentID]);
-    queryClient.refetchQueries(["unfinished", tournamentID]);
   };
 
   const teamForm = (

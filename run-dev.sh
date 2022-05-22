@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Stop when one of the servers exits with a non-zero exit code
 set -e
@@ -13,7 +13,7 @@ docker run --rm -d --network host --name psql -e POSTGRES_PASSWORD=passwd postgr
 
 # Frontend
 export REACT_APP_BACKEND_URL=http://localhost:8000/api
-npm start --prefix frontend 2>&1 | awk '{ print pfx, $0}' pfx="$FRONTEND_PREFIX" &
+npm start --prefix frontend 2>&1 | awk -W interactive '{ print pfx, $0}' pfx="$FRONTEND_PREFIX" &
 
 # Backend
 source ./backend/env/bin/activate
@@ -23,4 +23,3 @@ uvicorn --use-colors --app-dir backend --host 127.0.0.1 app.main:app --reload 2>
 
 # Kill the background jobs on exit
 trap "trap - SIGTERM && kill $(jobs -p)" SIGINT SIGTERM EXIT
-

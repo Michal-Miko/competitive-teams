@@ -33,9 +33,9 @@ const openNotificationWithIcon = (type, title, msg) => {
 };
 
 const AddPlayer = ({ teamid }) => {
-  let { currentUser, userData } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
-  const hdrs = { headers: { "firebase-id": fbId } };
+  let { currentToken, userData } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
+  const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
   const [playerIDs, setPlayerIDs] = useState({});
   const [playerQueryIDs, setPlayerQueryIDs] = useState({});
@@ -45,7 +45,7 @@ const AddPlayer = ({ teamid }) => {
   const handleSearch = (value) => {
     Api.get("/players/search/", {
       headers: {
-        "firebase-id": fbId,
+        "firebase-token": fbToken,
         name: value,
       },
     }).then((result) => {
@@ -75,8 +75,8 @@ const AddPlayer = ({ teamid }) => {
           "Player " + values.player + " has been added to the team."
         );
         queryClient.refetchQueries(["team", teamid]);
-        queryClient.refetchQueries(["teams", currentUser, userData]);
-        queryClient.refetchQueries(["capTeams", currentUser, userData]);
+        queryClient.refetchQueries(["teams", currentToken, userData]);
+        queryClient.refetchQueries(["capTeams", currentToken, userData]);
       })
       .catch((err) => {
         openNotificationWithIcon(

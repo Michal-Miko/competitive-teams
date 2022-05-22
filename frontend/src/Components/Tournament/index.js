@@ -21,8 +21,8 @@ export const tournamentTypes = {
 };
 
 const Tournament = ({ id }) => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   // If no id has been passed, check router params
   const { tournamentid } = useParams();
@@ -32,7 +32,7 @@ const Tournament = ({ id }) => {
     ["tournament", id],
     async () => {
       const res = await Api.get("/tournaments/" + id, {
-        headers: { "firebase-id": fbId },
+        headers: { "firebase-token": fbToken },
       });
       return res.data;
     }
@@ -44,7 +44,7 @@ const Tournament = ({ id }) => {
       const res = await Api.get(
         "/tournament/" + tournamentData.id + "/scoreboard",
         {
-          headers: { "firebase-id": fbId },
+          headers: { "firebase-token": fbToken },
         }
       );
       return res.data;
@@ -60,7 +60,7 @@ const Tournament = ({ id }) => {
       const res = await Api.get(
         "/tournament/" + tournamentData.id + "/finished_matches",
         {
-          headers: { "firebase-id": fbId },
+          headers: { "firebase-token": fbToken },
         }
       );
       return res.data;
@@ -76,7 +76,7 @@ const Tournament = ({ id }) => {
       const res = await Api.get(
         "/tournament/" + tournamentData.id + "/unfinished_matches",
         {
-          headers: { "firebase-id": fbId },
+          headers: { "firebase-token": fbToken },
         },
         {
           enabled: !!tournamentData,

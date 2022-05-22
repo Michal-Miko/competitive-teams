@@ -1,6 +1,4 @@
 from sqlalchemy.orm import Session
-from datetime import datetime
-import iso8601
 import itertools
 import random
 import copy
@@ -29,6 +27,7 @@ def delete_team(db: Session, team_id: int):
 
 def update_team(db: Session, team_id: int, team: schemas.TeamUpdate):
     db_team = db.query(models.Team).filter(models.Team.id == team_id).first()
+    db_team.name = team.name
     db_team.colour = team.colour
     db_team.description = team.description
     db.commit()
@@ -75,11 +74,11 @@ def count_teams(db: Session):
 # Players:
 
 
-def create_player(db: Session, player: schemas.PlayerCreate):
+def create_player(db: Session, player: schemas.PlayerCreate, player_uid):
     db_player = models.Player(
         name=player.name,
         description=player.description,
-        firebase_id=player.firebase_id,
+        firebase_id=player_uid,
         colour=player.colour,
         role="player",
     )
@@ -538,7 +537,6 @@ def update_tournament_match(
                 for i in range(0, len(teams_ids), 2):
                     comb.append((perm[i], perm[i + 1]))
                 return comb
-        print("MAKE NEW ROUND ERROR")
 
     if db_tournament.tournament_type == "swiss":
         scoreboard = get_tournament_scoreboard(db=db, tournament_id=tournament_id)

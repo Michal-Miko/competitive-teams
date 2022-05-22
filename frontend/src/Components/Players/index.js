@@ -20,8 +20,8 @@ const { Panel } = Collapse;
 const { Title } = Typography;
 
 const Players = () => {
-  let { currentUser } = useContext(AuthContext);
-  let fbId = currentUser ? currentUser.uid : null;
+  let { currentToken } = useContext(AuthContext);
+  let fbToken = currentToken ? currentToken : null;
 
   const [err, setErr] = useState(null);
   const [playersOnPage, setPlayersOnPage] = useState(null);
@@ -34,7 +34,7 @@ const Players = () => {
     Api.get(
       `/players/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
       {
-        headers: { "firebase-id": fbId, name: searched },
+        headers: { "firebase-token": fbToken, name: searched },
       }
     )
       .then((result) => {
@@ -44,12 +44,12 @@ const Players = () => {
         setPlayersOnPage(null);
         setErr(err.toString());
       });
-  }, [fbId, currentPage, searched]);
+  }, [fbToken, currentPage, searched]);
 
   useEffect(() => {
     setCurrentPage(1);
     Api.get(`/players_count_by_search/`, {
-      headers: { "firebase-id": fbId, name: searched },
+      headers: { "firebase-token": fbToken, name: searched },
     })
       .then((result) => {
         setAllPlayers(result.data);
@@ -58,7 +58,7 @@ const Players = () => {
         setPlayersOnPage(null);
         setErr(err.toString());
       });
-  }, [searched, fbId]);
+  }, [searched, fbToken]);
 
   return playersOnPage ? (
     <Layout className="list-background">
