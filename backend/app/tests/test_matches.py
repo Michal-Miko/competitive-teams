@@ -1,12 +1,12 @@
-from test_config import client, restart_db
+from test_config import client, restart_db, mock_permissions
 
 
-HEADER_WITH_FIREBASE_ID = {
-    "firebase-id": "admin"
+HEADER_WITH_FIREBASE_TOKEN = {
+    "firebase-token": "admin"
 }
 
-HEADER_WITH_FIREBASE_ID_AND_TEAMS = {
-    "firebase-id": "admin",
+HEADER_WITH_FIREBASE_TOKEN_AND_TEAMS = {
+    "firebase-token": "admin",
     "team1-id": "1",
     "team2-id": "2"
 }
@@ -15,7 +15,7 @@ PLAYER_CREATE_SCHEMA = {
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "admin",
+    "firebase_token": "admin",
 }
 
 TEAM1_CREATE_SCHEMA = {
@@ -119,14 +119,14 @@ def test_init(restart_db):
     response = client.post(
         "/api/teams/",
         json=TEAM1_CREATE_SCHEMA,
-        headers=HEADER_WITH_FIREBASE_ID
+        headers=HEADER_WITH_FIREBASE_TOKEN
     )
     assert response.status_code == 200
 
     response = client.post(
         "/api/teams/",
         json=TEAM2_CREATE_SCHEMA,
-        headers=HEADER_WITH_FIREBASE_ID
+        headers=HEADER_WITH_FIREBASE_TOKEN
     )
     assert response.status_code == 200
 
@@ -134,7 +134,7 @@ def test_init(restart_db):
 def test_create_match():
     response = client.post(
         "/api/matches/",
-        headers=HEADER_WITH_FIREBASE_ID_AND_TEAMS,
+        headers=HEADER_WITH_FIREBASE_TOKEN_AND_TEAMS,
         json=MATCH_CREATE_SCHEMA
     )
     assert response.status_code == 200
@@ -154,14 +154,14 @@ def test_read_matches():
 def test_update_team():
     response = client.patch(
         "/api/matches/1",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=MATCH_UPDATE_SCHEMA
     )
     assert response.status_code == 200
 
     response = client.get(
         "/api/matches/1",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
     )
     assert response.status_code == 200
     assert response.json() == UPDATED_TEAM_SCHEMA
