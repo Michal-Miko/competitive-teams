@@ -56,7 +56,7 @@ const Matches = () => {
     setCurrentPage(1);
     queryClient.refetchQueries(["all-matches", currentPage]);
     queryClient.refetchQueries("all-matches-count");
-  }, [queryClient, searched, fbToken]);
+  }, [queryClient, searched, currentPage, fbToken]);
 
   useEffect(() => {
     queryClient.refetchQueries(["all-matches", currentPage]);

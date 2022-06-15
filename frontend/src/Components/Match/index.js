@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Typography, Card, Spin, Col, Row } from "antd";
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";

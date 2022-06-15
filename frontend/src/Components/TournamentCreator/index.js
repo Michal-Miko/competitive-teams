@@ -24,14 +24,7 @@ const validateMessages = {
   // eslint-disable-next-line
   required: "${label} is required!",
 };
-const CreateTeams = ({
-  fbToken,
-  cancel,
-  onFinish,
-  teamsNumber,
-  updateTeamIDs,
-  isSwiss,
-}) => {
+const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
   const [nameToId, setNameToId] = useState({});
   const handleSearch = (value) => {
     Api.get("/teams/search/", {
@@ -48,25 +41,36 @@ const CreateTeams = ({
       );
     });
   };
+  const onFinishPreprocess = (values) => {
+    let new_values = {};
+
+    if (isSwiss) new_values.swiss_rounds = values.swiss_rounds;
+
+    let ids = [];
+    for (let i = 0; i < teamCount; i++) ids.push(nameToId[values[`team_${i}`]]);
+    new_values.teamIDs = ids;
+
+    return new_values;
+  };
   return (
-    <Form {...layout} onFinish={onFinish} validateMessages={validateMessages}>
+    <Form
+      {...layout}
+      onFinish={(values) => onFinish(onFinishPreprocess(values))}
+      validateMessages={validateMessages}
+    >
       {isSwiss && (
         <Form.Item name="swiss_rounds" label="Rounds:">
           <InputNumber />
         </Form.Item>
       )}
-      {[...Array(teamsNumber)].map((_, index) => (
+      {[...Array(teamCount)].map((_, index) => (
         <Form.Item
           key={index}
           rules={[{ required: true }]}
           name={`team_${index}`}
           label={`Team ${index + 1}`}
         >
-          <AutoComplete
-            onSearch={handleSearch}
-            placeholder="input here"
-            onSelect={(value) => updateTeamIDs(nameToId[value])}
-          >
+          <AutoComplete onSearch={handleSearch} placeholder="input here">
             {Object.keys(nameToId).map((team) => (
               <Option key={team} value={team}>
                 {team}
@@ -138,7 +142,6 @@ const TournamentCreator = () => {
   const { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
   const [visible, setVisible] = useState(false);
-  const [teamIDs, setTeamIDs] = useState([]);
   const [tournamentInfo, setTournamentInfo] = useState({});
   const [currentForm, setCurrentForm] = useState(1);
   const [isSwiss, setIsSwiss] = useState(false);
@@ -162,7 +165,7 @@ const TournamentCreator = () => {
         color: "ffffff",
         tournament_type: tournamentInfo.tournament_type,
         start_time: tournamentInfo.starttime,
-        teams_ids: teamIDs,
+        teams_ids: values.teamIDs,
         swiss_rounds: values.swiss_rounds,
       },
       {
@@ -172,7 +175,6 @@ const TournamentCreator = () => {
       }
     )
       .then(() => {
-        setTeamIDs([]);
         setTournamentInfo({});
         Notification(
           "success",
@@ -182,7 +184,6 @@ const TournamentCreator = () => {
       })
       .catch((err) => {
         setTournamentInfo({});
-        setTeamIDs([]);
         Notification(
           "error",
           `Eror when creating tournament  + ${
@@ -218,10 +219,7 @@ const TournamentCreator = () => {
             <CreateTeams
               cancel={cancel}
               onFinish={onFinishTeamsForm}
-              teamsNumber={tournamentInfo.number_of_teams}
-              updateTeamIDs={(newTeamID) =>
-                setTeamIDs((prevTeamIDs) => [...prevTeamIDs, newTeamID])
-              }
+              teamCount={tournamentInfo.number_of_teams}
               fbToken={fbToken}
               isSwiss={isSwiss}
             />

@@ -58,7 +58,7 @@ const Teams = () => {
     setCurrentPage(1);
     queryClient.refetchQueries(["all-teams", currentPage]);
     queryClient.refetchQueries("all-teams-count");
-  }, [queryClient, searched, fbToken]);
+  }, [queryClient, searched, currentPage, fbToken]);
 
   useEffect(() => {
     queryClient.refetchQueries(["all-teams", currentPage]);
