@@ -6,6 +6,7 @@ import "./index.css";
 import { AuthContext } from "../Auth/Auth";
 import { Api } from "../../Api";
 import Team from "../Team";
+import ModifyMatch from "./ModifyMatch";
 const { Title } = Typography;
 
 const Match = ({ id }) => {
@@ -47,7 +48,6 @@ const Match = ({ id }) => {
       <Card
         title={
           <Title level={2}>
-            {" "}
             <Row>
               <Col align="left" span={8}>
                 {matchdata.team1 ? matchdata.team1.name : "TBD"}
@@ -90,6 +90,24 @@ const Match = ({ id }) => {
                 "dddd, Do MMM YYYY [at] hh:mm a"
               )}
           </Title>
+        </Row>
+      </Card>
+      <Card>
+        <Row gutter={4} justify="center">
+          <Col>
+            {matchdata.tournament_id === null && !matchdata.finished ? (
+              <ModifyMatch
+                matchID={matchdata.id}
+                name={matchdata.name}
+                time={matchdata.start_time}
+                description={matchdata.description}
+                score1={matchdata.score1}
+                score2={matchdata.score2}
+                teamAName={matchdata.team1.name}
+                teamBName={matchdata.team2.name}
+              />
+            ) : null}
+          </Col>
         </Row>
       </Card>
     </div>

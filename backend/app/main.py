@@ -148,7 +148,7 @@ def create_player(player: schemas.PlayerCreate, db: Session = Depends(get_db)):
     db_player = crud.get_player_by_firebase_id(db, firebase_id=player_uid)
     db_player_name = crud.get_player_by_name(db, player.name)
     if db_player is None and db_player_name is None:
-        return crud.create_player(db, player)
+        return crud.create_player(db, player, player_uid)
     if db_player is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Name already used")
     return db_player

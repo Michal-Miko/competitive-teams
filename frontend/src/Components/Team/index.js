@@ -51,10 +51,12 @@ const Team = ({ id, noactions }) => {
         pagination={false}
         bordered={true}
       >
-        <ColumnGroup title="Team Captain" align="center">
-          <Column title="Name" dataIndex="name" key="capname" />
-          <Column title="Bio" dataIndex="description" key="capdesc" />
-        </ColumnGroup>
+        <Column
+          title="Team Captain"
+          dataIndex="name"
+          key="capname"
+          align="center"
+        />
       </Table>
       <Table
         dataSource={teamData.players}
@@ -64,11 +66,7 @@ const Team = ({ id, noactions }) => {
       >
         <ColumnGroup title="Players" align="center">
           <Column title="Name" dataIndex="name" key="playername" />
-          <Column
-            title="Description"
-            dataIndex="description"
-            key="playerdesc"
-          />
+          <Column title="Bio" dataIndex="description" key="playerdesc" />
           {!noactions ? (
             <Column
               title="Actions"

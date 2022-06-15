@@ -1,14 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-  Popover,
-  notification,
-  Button,
-  Input,
-  Col,
-  Form,
-  Space,
-  AutoComplete,
-} from "antd";
+import { Popover, notification, Button, Input, Col, Form, Space } from "antd";
 import { useQueryClient } from "react-query";
 import "./index.css";
 import { AuthContext } from "../Auth/Auth";
@@ -58,6 +49,7 @@ const EditTeam = ({ teamData }) => {
         queryClient.refetchQueries(["team", teamData.id]);
         queryClient.refetchQueries(["teams", currentToken, userData]);
         queryClient.refetchQueries(["capTeams", currentToken, userData]);
+        queryClient.refetchQueries("all-teams");
       })
       .catch((err) => {
         openNotificationWithIcon(
@@ -82,11 +74,7 @@ const EditTeam = ({ teamData }) => {
       <Form.Item name="name" label={`Team name`} rules={[{ required: true }]}>
         <Input />
       </Form.Item>
-      <Form.Item
-        name="description"
-        label="About the team"
-        rules={[{ required: true }]}
-      >
+      <Form.Item name="description" label="About the team">
         <Input />
       </Form.Item>
       <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 6 }}>

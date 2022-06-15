@@ -20,7 +20,7 @@ const Matches = () => {
   const [err, setErr] = useState(null);
 
   useEffect(() => {
-    Api.get("/upcoming_matches/?limit=5", {
+    Api.get("/upcoming_matches/?limit=10", {
       headers: { "firebase-token": fbToken },
     })
       .then((result) => {

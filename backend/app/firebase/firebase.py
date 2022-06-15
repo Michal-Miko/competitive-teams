@@ -1,5 +1,5 @@
 from firebase_admin import auth, initialize_app
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 default_app = initialize_app()
 
@@ -13,6 +13,6 @@ def verify_token(token):
     except auth.InvalidIdTokenError:
         # Token is invalid
         HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Token is invalid, please reauthenticate.")
-    except auth.ExpiredTokenError:
+    except auth.ExpiredIdTokenError:
         # Token is expired
         HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Token has expired, please reauthenticate.")

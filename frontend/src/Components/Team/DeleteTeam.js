@@ -1,19 +1,10 @@
 import React, { useContext, useState } from "react";
-import {
-  Popover,
-  notification,
-  Button,
-  Col,
-  Form,
-  Space,
-  AutoComplete,
-} from "antd";
+import { Popover, notification, Button, Col, Form, Space } from "antd";
 import { useQueryClient } from "react-query";
 import "./index.css";
 import { AuthContext } from "../Auth/Auth";
 
 import { Api } from "../../Api";
-const { Option } = AutoComplete;
 
 const layout = {
   labelCol: { span: 8 },
@@ -32,13 +23,10 @@ const DeleteTeam = ({ teamid }) => {
   let fbToken = currentToken ? currentToken : null;
   const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
-  const [playerIDs, setPlayerIDs] = useState({});
-  const [playerQueryIDs, setPlayerQueryIDs] = useState({});
 
   const queryClient = useQueryClient();
 
   const onFinish = (values) => {
-    values.playerid = playerQueryIDs[values.player];
     Api.delete("/teams/" + teamid, {}, hdrs)
       .then(() => {
         openNotificationWithIcon(
