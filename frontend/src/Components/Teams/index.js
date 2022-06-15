@@ -31,14 +31,15 @@ const Teams = () => {
   const pageSize = 10;
 
   const { isIdle, error: err, data: teamsOnPage } = useQuery(
-    "all-teams",
+    ["all-teams", currentPage],
     async () => {
       const res = await Api.get(
         `/teams/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
         { headers: { "firebase-token": fbToken, name: searched } }
       );
       return res.data;
-    }
+    },
+    { keepPreviousData: true }
   );
 
   const { countIsIdle, error: countErr, data: allTeams } = useQuery(
@@ -55,9 +56,13 @@ const Teams = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-    queryClient.refetchQueries(["all-teams"]);
-    queryClient.refetchQueries(["all-teams-count"]);
+    queryClient.refetchQueries(["all-teams", currentPage]);
+    queryClient.refetchQueries("all-teams-count");
   }, [queryClient, searched, fbToken]);
+
+  useEffect(() => {
+    queryClient.refetchQueries(["all-teams", currentPage]);
+  }, [queryClient, currentPage]);
 
   return teamsOnPage ? (
     <Layout className="list-background">

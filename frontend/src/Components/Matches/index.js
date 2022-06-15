@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import { useQuery, useQueryClient } from "react-query";
 import {
   Layout,
   Card,
@@ -20,42 +21,46 @@ const { Title } = Typography;
 const Matches = () => {
   let { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
-  const [matchesOnPage, setMatchesOnPage] = useState(null);
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [allMatches, setAllMatches] = useState(0);
   const [searched, setSearched] = useState("");
-  const [err, setErr] = useState(null);
   const pageSize = 10;
 
-  useEffect(() => {
-    Api.get(
-      `/matches/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
-      {
+  const { isIdle, error: err, data: matchesOnPage } = useQuery(
+    ["all-matches", currentPage],
+    async () => {
+      const res = await Api.get(
+        `/matches/search/?skip=${
+          (currentPage - 1) * pageSize
+        }&limit=${pageSize}`,
+        {
+          headers: { "firebase-token": fbToken, name: searched },
+        }
+      );
+      return res.data;
+    },
+    { keepPreviousData: true }
+  );
+
+  const { countIsIdle, error: countErr, data: allMatches } = useQuery(
+    "all-matches-count",
+    async () => {
+      const res = await Api.get(`/matches_count_by_search/`, {
         headers: { "firebase-token": fbToken, name: searched },
-      }
-    )
-      .then((result) => {
-        setMatchesOnPage(result.data);
-      })
-      .catch((err) => {
-        setMatchesOnPage(null);
-        setErr(err.toString());
       });
-  }, [fbToken, currentPage, searched]);
+      return res.data;
+    }
+  );
 
   useEffect(() => {
     setCurrentPage(1);
-    Api.get(`/matches_count_by_search/`, {
-      headers: { "firebase-token": fbToken, name: searched },
-    })
-      .then((result) => {
-        setAllMatches(result.data);
-      })
-      .catch((err) => {
-        setMatchesOnPage(null);
-        setErr(err.toString());
-      });
-  }, [searched, fbToken]);
+    queryClient.refetchQueries(["all-matches", currentPage]);
+    queryClient.refetchQueries("all-matches-count");
+  }, [queryClient, searched, fbToken]);
+
+  useEffect(() => {
+    queryClient.refetchQueries(["all-matches", currentPage]);
+  }, [queryClient, currentPage]);
 
   return matchesOnPage ? (
     <Layout className="list-background">
@@ -97,12 +102,19 @@ const Matches = () => {
         </Card>
       </Content>
     </Layout>
-  ) : err ? (
+  ) : err || countErr ? (
     <Title>
       Api request failed for the list of matches.
       <br />
-      {err}
+      {err ? err : null}
+      {countErr ? countErr : null}
     </Title>
+  ) : isIdle || countIsIdle ? (
+    <Layout>
+      <Content className="site-layout-background">
+        <Card></Card>
+      </Content>
+    </Layout>
   ) : (
     <Layout>
       <Content className="site-layout-background">

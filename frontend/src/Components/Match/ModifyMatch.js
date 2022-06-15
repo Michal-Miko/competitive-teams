@@ -1,4 +1,5 @@
 import React, { useContext, useState } from "react";
+import { useQueryClient } from "react-query";
 import {
   Popover,
   Button,
@@ -36,6 +37,7 @@ const ModifyMatch = ({
 }) => {
   let { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
+  const queryClient = useQueryClient();
   const hdrs = { headers: { "firebase-token": fbToken } };
   const [visible, setVisible] = useState(false);
   const [dVisible, setDVisible] = useState(false);
@@ -60,6 +62,8 @@ const ModifyMatch = ({
         );
         setVisible(false);
         setDVisible(false);
+        queryClient.refetchQueries("all-matches");
+        queryClient.refetchQueries(["match", matchID]);
       })
       .catch((err) =>
         Notification(

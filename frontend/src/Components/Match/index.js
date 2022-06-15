@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Typography, Card, Spin, Col, Row } from "antd";
+import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import moment from "moment";
 import "./index.css";
@@ -17,25 +18,20 @@ const Match = ({ id }) => {
   const { matchid } = useParams();
   if (id === null || id === undefined) id = matchid;
 
-  const [matchdata, setMatchdata] = useState(null);
-  const [err, setErr] = useState(null);
-
   // Get match data
-  useEffect(() => {
-    if (id === null || id === undefined) setErr("No match id passed.");
-    else {
-      Api.get("/matches/" + id, { headers: { "firebase-token": fbToken } })
-        .then((response) => {
-          if (response.status === 200) {
-            setMatchdata(response.data);
-          }
-        })
-        .catch((err) => {
-          setMatchdata(null);
-          setErr(err.toString());
+  const { isIdle, error: err, data: matchdata } = useQuery(
+    ["match", id],
+    async () => {
+      if (id !== null && id !== undefined) {
+        const res = await Api.get("/matches/" + id, {
+          headers: { "firebase-token": fbToken },
         });
+        return res.data;
+      } else {
+        throw new Error("No match id passed.");
+      }
     }
-  }, [id, fbToken]);
+  );
 
   function color(matchd) {
     if (matchd.finished) {
@@ -117,6 +113,8 @@ const Match = ({ id }) => {
       <br />
       {err}
     </Title>
+  ) : isIdle ? (
+    <Card />
   ) : (
     <Spin />
   );
