@@ -1,26 +1,34 @@
-from test_config import client, restart_db
+from test_config import client, restart_db, mock_permissions
 
 
 PLAYER_CREATE_SCHEMA = {
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "admin",
+    "firebase_token": "admin",
 }
 
 HACKER_CREATE_SCHEMA = {
     "name": "Hacker",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "hacker",
+    "firebase_token": "hacker",
+}
+
+TEAM_CREATE_SCHEMA_1 = {
+    "name": "Szybcy",
+}
+
+TEAM_CREATE_SCHEMA_2 = {
+    "name": "Wspaniali",
 }
 
 USER_WITH_PERMISSION = {
-    "firebase-id": "admin"
+    "firebase-token": "admin"
 }
 
 USER_WITHOUT_PERMISSION = {
-    "firebase-id": "hacker"
+    "firebase-token": "hacker"
 }
 
 
@@ -41,23 +49,25 @@ def test_init(restart_db):
         "/api/change_role/2",
         headers={
             "player-role": "guest",
-            "firebase-id": "admin"
+            "firebase_token": "admin"
         }
     )
     assert response.status_code == 200
 
 
-def test_use_permitted_endpoint():
-    response = client.get(
-        "/api/players/firebase_id/admin",
-        headers=USER_WITH_PERMISSION
-    )
-    assert response.status_code == 200
-
-
 def test_use_not_permitted_endpoint():
-    response = client.get(
-        "/api/players/firebase_id/admin",
-        headers=USER_WITHOUT_PERMISSION
+    response = client.post(
+        "/api/teams/",
+        headers=USER_WITHOUT_PERMISSION,
+        json=TEAM_CREATE_SCHEMA_1
     )
     assert response.status_code == 403
+
+
+def test_use_permitted_endpoint():
+    response = client.post(
+        "/api/teams/",
+        headers=USER_WITH_PERMISSION,
+        json=TEAM_CREATE_SCHEMA_2
+    )
+    assert response.status_code == 200

@@ -101,7 +101,7 @@ const Team = ({ id, noactions }) => {
         </Card>
       ) : null}
       <Card>
-        <Meta title="Description" description={teamData.description} />
+        <Meta title="About the team" description={teamData.description} />
       </Card>
     </div>
   ) : err ? (

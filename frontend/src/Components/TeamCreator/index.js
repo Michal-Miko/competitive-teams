@@ -128,7 +128,7 @@ const TeamCreator = () => {
           ))}
         </AutoComplete>
       </Form.Item>
-      <Form.Item name="desc" label="Description">
+      <Form.Item name="desc" label="About the team">
         <TextArea />
       </Form.Item>
       <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>

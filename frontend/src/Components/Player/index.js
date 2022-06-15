@@ -67,7 +67,7 @@ const Player = ({ id }) => {
           <Text strong>Name: </Text> {playerdata.name}
         </p>
         <p>
-          <Text strong>Description: </Text> {playerdata.description}
+          <Text strong>Bio: </Text> {playerdata.description}
         </p>
         <p>
           <Text strong>Colour: </Text> {playerdata.colour}

@@ -1,15 +1,15 @@
-from test_config import client, restart_db
+from test_config import client, restart_db, mock_permissions
 
 
-HEADER_WITH_FIREBASE_ID = {
-    "firebase-id": "admin"
+HEADER_WITH_FIREBASE_TOKEN = {
+    "firebase-token": "admin"
 }
 
 PLAYER_CREATE_SCHEMA = {
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "admin",
+    "firebase_token": "admin",
 }
 
 PLAYER_UPDATE_SCHEMA = {
@@ -20,7 +20,7 @@ PLAYER_UPDATE_SCHEMA = {
 
 PLAYER_SCHEMA = {
     "id": 1,
-    "role": "admin",
+    "role": "player",
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
@@ -28,7 +28,7 @@ PLAYER_SCHEMA = {
 
 UPDATED_PLAYER_SCHEMA = {
     "id": 1,
-    "role": "admin",
+    "role": "player",
     "name": "Lew",
     "description": "DESC",
     "colour": "#bbbbbb",
@@ -70,19 +70,10 @@ def test_read_player_by_id():
     assert response.json() == PLAYER_SCHEMA
 
 
-def test_read_player_by_firebase_id():
-    response = client.get(
-        "/api/players/firebase_id/admin",
-        headers=HEADER_WITH_FIREBASE_ID
-    )
-    assert response.status_code == 200
-    assert response.json() == PLAYER_SCHEMA
-
-
 def test_update_player():
     response = client.patch(
         "/api/players/1",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=PLAYER_UPDATE_SCHEMA
     )
     assert response.status_code == 200
@@ -97,7 +88,7 @@ def test_update_player():
 def test_remove_player():
     response = client.delete(
         "/api/players/1",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
     )
     assert response.status_code == 200
 

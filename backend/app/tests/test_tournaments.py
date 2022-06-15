@@ -1,15 +1,15 @@
-from test_config import client, restart_db
+from test_config import client, restart_db, mock_permissions
 
 
-HEADER_WITH_FIREBASE_ID = {
-    "firebase-id": "admin"
+HEADER_WITH_FIREBASE_TOKEN = {
+    "firebase-token": "admin"
 }
 
 PLAYER_CREATE_SCHEMA = {
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "admin",
+    "firebase_token": "admin",
 }
 
 TEAM1_CREATE_SCHEMA = {
@@ -49,14 +49,14 @@ def test_init(restart_db):
     response = client.post(
         "/api/teams/",
         json=TEAM1_CREATE_SCHEMA,
-        headers=HEADER_WITH_FIREBASE_ID
+        headers=HEADER_WITH_FIREBASE_TOKEN
     )
     assert response.status_code == 200
 
     response = client.post(
         "/api/teams/",
         json=TEAM2_CREATE_SCHEMA,
-        headers=HEADER_WITH_FIREBASE_ID
+        headers=HEADER_WITH_FIREBASE_TOKEN
     )
     assert response.status_code == 200
 
@@ -64,7 +64,7 @@ def test_init(restart_db):
 def test_create_tournament():
     response = client.post(
         "/api/tournaments/",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=TOURNAMENT_CREATE_SCHEMA
     )
     assert response.status_code == 200
@@ -74,7 +74,7 @@ def test_create_tournament():
 def test_update_tournament_match():
     response = client.patch(
         "/api/tournaments/1/input_match_result",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=MATCH_RESULT_SCHEMA,
         params={
             "match_id": 1
@@ -86,7 +86,7 @@ def test_update_tournament_match():
 def test_read_tournament_scoreboard():
     response = client.get(
         "/api/tournament/1/scoreboard",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
     )
     assert response.status_code == 200
     results = response.json()["results"]

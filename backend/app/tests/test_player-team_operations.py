@@ -1,15 +1,15 @@
-from test_config import client, restart_db
+from test_config import client, restart_db, mock_permissions
 
 
-HEADER_WITH_FIREBASE_ID = {
-    "firebase-id": "admin"
+HEADER_WITH_FIREBASE_TOKEN = {
+    "firebase-token": "admin"
 }
 
 PLAYER_CREATE_SCHEMA = {
     "name": "Tygrys",
     "description": "DESC",
     "colour": "#ffffff",
-    "firebase_id": "admin",
+    "firebase_token": "admin",
 }
 
 TEAM_CREATE_SCHEMA = {
@@ -38,7 +38,7 @@ def test_init(restart_db):
 
     response = client.post(
         "/api/teams/",
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=TEAM_CREATE_SCHEMA
     )
     assert response.status_code == 200
@@ -50,7 +50,7 @@ def test_link_player_to_team():
         params={
             "player_id": 1,
         },
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
     )
     assert response.status_code == 200
 
@@ -67,7 +67,7 @@ def test_unlink_player_from_team():
         params={
             "player_id": 1,
         },
-        headers=HEADER_WITH_FIREBASE_ID,
+        headers=HEADER_WITH_FIREBASE_TOKEN,
         json=PLAYER_CREATE_SCHEMA
     )
     assert response.status_code == 200
