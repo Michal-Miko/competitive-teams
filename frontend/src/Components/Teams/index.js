@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
+import { useQuery, useQueryClient } from "react-query";
 import {
   Layout,
   Card,
@@ -8,6 +9,7 @@ import {
   AutoComplete,
   Row,
   Pagination,
+  Table,
 } from "antd";
 import "./index.css";
 
@@ -23,42 +25,44 @@ const { Title } = Typography;
 const Teams = () => {
   let { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;
-  const [err, setErr] = useState(null);
-  const [teamsOnPage, setTeamsOnPage] = useState(null);
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
-  const [allTeams, setAllTeams] = useState(0);
   const [searched, setSearched] = useState("");
   const pageSize = 10;
 
-  useEffect(() => {
-    Api.get(
-      `/teams/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
-      {
+  const { isIdle, error: err, data: teamsOnPage } = useQuery(
+    ["all-teams", currentPage],
+    async () => {
+      const res = await Api.get(
+        `/teams/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
+        { headers: { "firebase-token": fbToken, name: searched } }
+      );
+      return res.data;
+    },
+    { keepPreviousData: true }
+  );
+
+  const { countIsIdle, error: countErr, data: allTeams } = useQuery(
+    "all-teams-count",
+    async () => {
+      const res = await Api.get(`/teams_count_by_search/`, {
         headers: { "firebase-token": fbToken, name: searched },
-      }
-    )
-      .then((result) => {
-        setTeamsOnPage(result.data);
-      })
-      .catch((err) => {
-        setTeamsOnPage(null);
-        setErr(err.toString());
       });
-  }, [fbToken, currentPage, searched]);
+      return res.data;
+    }
+  );
+
+  useEffect(() => {}, [fbToken, currentPage, searched]);
 
   useEffect(() => {
     setCurrentPage(1);
-    Api.get(`/teams_count_by_search/`, {
-      headers: { "firebase-token": fbToken, name: searched },
-    })
-      .then((result) => {
-        setAllTeams(result.data);
-      })
-      .catch((err) => {
-        setTeamsOnPage(null);
-        setErr(err.toString());
-      });
-  }, [searched, fbToken]);
+    queryClient.refetchQueries(["all-teams", currentPage]);
+    queryClient.refetchQueries("all-teams-count");
+  }, [queryClient, searched, currentPage, fbToken]);
+
+  useEffect(() => {
+    queryClient.refetchQueries(["all-teams", currentPage]);
+  }, [queryClient, currentPage]);
 
   return teamsOnPage ? (
     <Layout className="list-background">
@@ -102,12 +106,21 @@ const Teams = () => {
         </Card>
       </Content>
     </Layout>
-  ) : err ? (
+  ) : err || countErr ? (
     <Title>
       Api request failed for the list of teams.
       <br />
-      {err}
+      {err ? err : null}
+      {countErr ? countErr : null}
     </Title>
+  ) : isIdle || countIsIdle ? (
+    <Layout className="list-background">
+      <Content className="site-layout-background">
+        <Card>
+          <Table></Table>
+        </Card>
+      </Content>
+    </Layout>
   ) : (
     <Layout className="list-background">
       <Content className="site-layout-background">

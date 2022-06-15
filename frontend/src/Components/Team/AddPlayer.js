@@ -126,12 +126,16 @@ const AddPlayer = ({ teamid }) => {
   return (
     <Col align="center">
       <Popover
-        placement="right"
+        placement="top"
         title="Add a player to the team"
         trigger="click"
         display="inline-block"
         content={playerForm}
         visible={visible}
+        onVisibleChange={(v) => setVisible(v)}
+        overlayStyle={{
+          width: "15vw",
+        }}
       >
         <Button
           type="primary"

@@ -1,5 +1,5 @@
 from firebase_admin import auth, initialize_app
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 default_app = initialize_app()
 

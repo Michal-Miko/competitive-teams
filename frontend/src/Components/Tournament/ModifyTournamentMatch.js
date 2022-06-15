@@ -96,6 +96,10 @@ const ModifyTournamentMatch = ({
         display="inline-block"
         content={teamForm}
         visible={visible}
+        onVisibleChange={(v) => setVisible(v)}
+        overlayStyle={{
+          width: "20vw",
+        }}
       >
         <Button
           type="primary"

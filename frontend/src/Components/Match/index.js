@@ -1,11 +1,13 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { Typography, Card, Spin, Col, Row } from "antd";
+import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import moment from "moment";
 import "./index.css";
 import { AuthContext } from "../Auth/Auth";
 import { Api } from "../../Api";
 import Team from "../Team";
+import ModifyMatch from "./ModifyMatch";
 const { Title } = Typography;
 
 const Match = ({ id }) => {
@@ -16,25 +18,20 @@ const Match = ({ id }) => {
   const { matchid } = useParams();
   if (id === null || id === undefined) id = matchid;
 
-  const [matchdata, setMatchdata] = useState(null);
-  const [err, setErr] = useState(null);
-
   // Get match data
-  useEffect(() => {
-    if (id === null || id === undefined) setErr("No match id passed.");
-    else {
-      Api.get("/matches/" + id, { headers: { "firebase-token": fbToken } })
-        .then((response) => {
-          if (response.status === 200) {
-            setMatchdata(response.data);
-          }
-        })
-        .catch((err) => {
-          setMatchdata(null);
-          setErr(err.toString());
+  const { isIdle, error: err, data: matchdata } = useQuery(
+    ["match", id],
+    async () => {
+      if (id !== null && id !== undefined) {
+        const res = await Api.get("/matches/" + id, {
+          headers: { "firebase-token": fbToken },
         });
+        return res.data;
+      } else {
+        throw new Error("No match id passed.");
+      }
     }
-  }, [id, fbToken]);
+  );
 
   function color(matchd) {
     if (matchd.finished) {
@@ -47,7 +44,6 @@ const Match = ({ id }) => {
       <Card
         title={
           <Title level={2}>
-            {" "}
             <Row>
               <Col align="left" span={8}>
                 {matchdata.team1 ? matchdata.team1.name : "TBD"}
@@ -92,6 +88,24 @@ const Match = ({ id }) => {
           </Title>
         </Row>
       </Card>
+      <Card>
+        <Row gutter={4} justify="center">
+          <Col>
+            {matchdata.tournament_id === null && !matchdata.finished ? (
+              <ModifyMatch
+                matchID={matchdata.id}
+                name={matchdata.name}
+                time={matchdata.start_time}
+                description={matchdata.description}
+                score1={matchdata.score1}
+                score2={matchdata.score2}
+                teamAName={matchdata.team1.name}
+                teamBName={matchdata.team2.name}
+              />
+            ) : null}
+          </Col>
+        </Row>
+      </Card>
     </div>
   ) : err ? (
     <Title>
@@ -99,6 +113,8 @@ const Match = ({ id }) => {
       <br />
       {err}
     </Title>
+  ) : isIdle ? (
+    <Card />
   ) : (
     <Spin />
   );
