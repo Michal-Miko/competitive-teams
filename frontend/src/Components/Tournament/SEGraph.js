@@ -37,11 +37,11 @@ const SEGraph = ({ tournamentData }) => {
   const [graph, setGraph] = useState(null);
   const [nodeWidth, setNodeWidth] = useState(250);
 
-  const getNewNodeWidth = (tournamentData) => {
+  const getNewNodeWidth = (data) => {
     let max_width = 250;
-    const teams = [...tournamentData.teams, { name: "TBD" }];
+    const teams = [...data.teams, { name: "TBD" }];
     for (const team of teams) {
-      for (const otherTeam of tournamentData.teams) {
+      for (const otherTeam of teams) {
         if (team !== otherTeam) {
           const team1 = team.name;
           const team2 = otherTeam.name;
