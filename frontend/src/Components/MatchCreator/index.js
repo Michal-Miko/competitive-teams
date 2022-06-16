@@ -164,7 +164,7 @@ const MatchCreator = () => {
         onVisibleChange={(v) => setVisible(v)}
         overlayStyle={{
           width: "20vw",
-          minWidth: "500px",
+          minWidth: 500,
         }}
       >
         <Button

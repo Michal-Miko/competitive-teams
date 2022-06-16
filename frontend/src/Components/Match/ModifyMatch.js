@@ -165,7 +165,7 @@ const ModifyMatch = ({
             onVisibleChange={(v) => setVisible(v)}
             overlayStyle={{
               width: "20vw",
-              minWidth: "500px",
+              minWidth: 500,
             }}
           >
             <Popover content="Type in the score and finish the match. This cannot be reversed!">
@@ -193,7 +193,7 @@ const ModifyMatch = ({
             onVisibleChange={(v) => setDVisible(v)}
             overlayStyle={{
               width: "20vw",
-              minWidth: "500px",
+              minWidth: 500,
             }}
           >
             <Button
