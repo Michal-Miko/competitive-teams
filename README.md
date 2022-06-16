@@ -1,4 +1,4 @@
-# Competitive Teams [![Main build status](https://travis-ci.org/nokia-wroclaw/innovativeproject-competitive-teams.svg?branch=main)](https://travis-ci.org/nokia-wroclaw/innovativeproject-competitive-teams)
+# Competitive Teams ![build status](https://app.travis-ci.com/Michal-Miko/competitive-teams.svg?branch=develop)
 
 https://competitive-teams.herokuapp.com
 
