@@ -39,19 +39,17 @@ const SEGraph = ({ tournamentData }) => {
 
   const getNewNodeWidth = (tournamentData) => {
     let max_width = 250;
-    const matches = tournamentData.matches;
-    for (const match of matches) {
-      const score = match.finished
-        ? `${match.score1} : ${match.score2}`
-        : "TBD";
-      const team1 = match.team1 !== null ? match.team1.name : "TBD";
-      const team2 = match.team2 !== null ? match.team2.name : "TBD";
-      const label = `${team1} vs ${team2}`;
-      const labelWidth = getTextWidth(label, 20) + 80;
-      if (labelWidth > max_width) max_width = labelWidth;
-      const desc = `${match.name}\nScore: ${score}`;
-      const descWidth = getTextWidth(desc, 10) + 100;
-      if (descWidth > max_width) max_width = descWidth;
+    const teams = [...tournamentData.teams, { name: "TBD" }];
+    for (const team of teams) {
+      for (const otherTeam of tournamentData.teams) {
+        if (team !== otherTeam) {
+          const team1 = team.name;
+          const team2 = otherTeam.name;
+          const label = `${team1} vs ${team2}`;
+          const labelWidth = getTextWidth(label, 20) + 80;
+          if (labelWidth > max_width) max_width = labelWidth;
+        }
+      }
     }
     return max_width;
   };
