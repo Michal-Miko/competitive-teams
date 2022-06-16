@@ -7,7 +7,6 @@ import "./index.css";
 import { AuthContext } from "../Auth/Auth";
 import { Api } from "../../Api";
 import EditTeam from "./EditTeam";
-import DeleteTeam from "./DeleteTeam";
 import AddPlayer from "./AddPlayer";
 import RemovePlayer from "./RemovePlayer";
 import MakeCaptain from "./MakeCaptain";
@@ -93,9 +92,6 @@ const Team = ({ id, noactions }) => {
             </Col>
             <Col>
               <EditTeam teamData={teamData} />
-            </Col>
-            <Col>
-              <DeleteTeam teamid={id} />
             </Col>
           </Row>
         </Card>
