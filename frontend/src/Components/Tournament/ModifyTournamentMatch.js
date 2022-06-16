@@ -99,6 +99,7 @@ const ModifyTournamentMatch = ({
         onVisibleChange={(v) => setVisible(v)}
         overlayStyle={{
           width: "20vw",
+          minWidth: "500px",
         }}
       >
         <Button

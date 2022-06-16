@@ -203,6 +203,7 @@ const TournamentCreator = () => {
         title="Create a new tournament"
         overlayStyle={{
           width: "20vw",
+          minWidth: "500px",
         }}
         placement="right"
         display="inline-block"

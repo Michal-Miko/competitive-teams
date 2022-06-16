@@ -155,6 +155,7 @@ const TeamCreator = () => {
         visible={visible}
         overlayStyle={{
           width: "20vw",
+          minWidth: "500px",
         }}
         onVisibleChange={(v) => setVisible(v)}
       >
