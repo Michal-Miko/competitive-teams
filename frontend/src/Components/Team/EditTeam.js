@@ -111,7 +111,7 @@ const EditTeam = ({ teamData }) => {
             setVisible(true);
           }}
         >
-          Edit Team
+          Edit team
         </Button>
       </Popover>
     </Col>
