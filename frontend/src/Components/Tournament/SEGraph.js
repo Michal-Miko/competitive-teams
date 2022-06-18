@@ -51,6 +51,10 @@ const SEGraph = ({ tournamentData }) => {
         }
       }
     }
+    for (const match of data.matches) {
+      const matchWidth = getTextWidth(match.name, 12) + 80;
+      if (matchWidth > max_width) max_width = matchWidth;
+    }
     return max_width;
   };
 
