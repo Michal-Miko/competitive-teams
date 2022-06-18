@@ -46,7 +46,10 @@ const ModifyTournamentMatch = ({
       },
       hdrs
     )
-      .then(() => Notification("success", "Match modified successfully"))
+      .then(() => {
+        Notification("success", "Match modified successfully");
+        queryClient.refetchQueries(["unfinished", tournamentID]);
+      })
       .catch((err) =>
         Notification(
           "error",
@@ -57,7 +60,6 @@ const ModifyTournamentMatch = ({
         )
       );
     setVisible(false);
-    queryClient.refetchQueries(["unfinished", tournamentID]);
   };
 
   const teamForm = (

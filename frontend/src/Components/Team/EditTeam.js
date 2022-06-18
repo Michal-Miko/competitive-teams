@@ -49,7 +49,7 @@ const EditTeam = ({ teamData }) => {
         queryClient.refetchQueries(["team", teamData.id]);
         queryClient.refetchQueries(["teams", currentToken, userData]);
         queryClient.refetchQueries(["capTeams", currentToken, userData]);
-        queryClient.refetchQueries("all-teams");
+        queryClient.refetchQueries(["all-teams"]);
       })
       .catch((err) => {
         openNotificationWithIcon(

@@ -30,7 +30,8 @@ const Tournament = ({ id }) => {
 
   const { isLoading, error: err, data: tournamentData } = useQuery(
     ["tournament", id],
-    async () => {
+    async ({ queryKey }) => {
+      const [_, id] = queryKey;
       const res = await Api.get("/tournaments/" + id, {
         headers: { "firebase-token": fbToken },
       });
@@ -40,13 +41,11 @@ const Tournament = ({ id }) => {
 
   const { data: scoreboard } = useQuery(
     ["scoreboard", id],
-    async () => {
-      const res = await Api.get(
-        "/tournament/" + tournamentData.id + "/scoreboard",
-        {
-          headers: { "firebase-token": fbToken },
-        }
-      );
+    async ({ queryKey }) => {
+      const [_, id] = queryKey;
+      const res = await Api.get("/tournament/" + id + "/scoreboard", {
+        headers: { "firebase-token": fbToken },
+      });
       return res.data;
     },
     {
@@ -56,13 +55,11 @@ const Tournament = ({ id }) => {
 
   const { data: finishedMatches } = useQuery(
     ["finished", id],
-    async () => {
-      const res = await Api.get(
-        "/tournament/" + tournamentData.id + "/finished_matches",
-        {
-          headers: { "firebase-token": fbToken },
-        }
-      );
+    async ({ queryKey }) => {
+      const [_, id] = queryKey;
+      const res = await Api.get("/tournament/" + id + "/finished_matches", {
+        headers: { "firebase-token": fbToken },
+      });
       return res.data;
     },
     {
@@ -72,9 +69,10 @@ const Tournament = ({ id }) => {
 
   const { data: unfinishedMatches } = useQuery(
     ["unfinished", id],
-    async () => {
+    async ({ queryKey }) => {
+      const [_, id] = queryKey;
       const res = await Api.get(
-        "/tournament/" + tournamentData.id + "/unfinished_matches",
+        "/tournament/" + id + "/unfinished_matches",
         {
           headers: { "firebase-token": fbToken },
         },

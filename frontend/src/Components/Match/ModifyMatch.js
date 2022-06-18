@@ -62,7 +62,7 @@ const ModifyMatch = ({
         );
         setVisible(false);
         setDVisible(false);
-        queryClient.refetchQueries("all-matches");
+        queryClient.refetchQueries(["all-matches"]);
         queryClient.refetchQueries(["match", matchID]);
       })
       .catch((err) =>

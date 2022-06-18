@@ -27,8 +27,9 @@ const Matches = () => {
   const pageSize = 10;
 
   const { isIdle, error: err, data: matchesOnPage } = useQuery(
-    ["all-matches", currentPage],
-    async () => {
+    ["all-matches", currentPage, searched],
+    async ({ queryKey }) => {
+      const [_, currentPage, searched] = queryKey;
       const res = await Api.get(
         `/matches/search/?skip=${
           (currentPage - 1) * pageSize
@@ -43,8 +44,9 @@ const Matches = () => {
   );
 
   const { countIsIdle, error: countErr, data: allMatches } = useQuery(
-    "all-matches-count",
-    async () => {
+    ["all-matches-count", searched],
+    async ({ queryKey }) => {
+      const [_, searched] = queryKey;
       const res = await Api.get(`/matches_count_by_search/`, {
         headers: { "firebase-token": fbToken, name: searched },
       });
@@ -53,13 +55,14 @@ const Matches = () => {
   );
 
   useEffect(() => {
+    console.log("Change");
     setCurrentPage(1);
-    queryClient.refetchQueries(["all-matches", currentPage]);
-    queryClient.refetchQueries("all-matches-count");
+    queryClient.refetchQueries(["all-matches"]);
+    queryClient.refetchQueries(["all-matches-count"]);
   }, [queryClient, searched, currentPage, fbToken]);
 
   useEffect(() => {
-    queryClient.refetchQueries(["all-matches", currentPage]);
+    queryClient.refetchQueries(["all-matches"]);
   }, [queryClient, currentPage]);
 
   return matchesOnPage ? (
