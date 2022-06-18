@@ -158,6 +158,11 @@ const SEGraph = ({ tournamentData }) => {
         graphData.nodes[i].description = desc;
         if (!match.finished) graphData.nodes[i].stateIcon = { show: false };
       }
+      graph.cfg.defaultNode.size = [nodeWidth, nodeHeight];
+      const width =
+        Math.log2(tournamentData.teams.length) * (nodeWidth + padding);
+      const height = (tournamentData.teams.length / 2) * (nodeHeight + padding);
+      graph.changeSize(width, height);
       graph.data(graphData);
       graph.clear();
       graph.render();

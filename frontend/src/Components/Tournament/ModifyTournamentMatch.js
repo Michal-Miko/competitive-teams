@@ -49,6 +49,7 @@ const ModifyTournamentMatch = ({
       .then(() => {
         Notification("success", "Match modified successfully");
         queryClient.refetchQueries(["unfinished", tournamentID]);
+        queryClient.refetchQueries(["tournament", tournamentID]);
       })
       .catch((err) =>
         Notification(
