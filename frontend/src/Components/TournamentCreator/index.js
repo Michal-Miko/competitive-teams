@@ -41,6 +41,7 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
       );
     });
   };
+
   const onFinishPreprocess = (values) => {
     let new_values = {};
 
@@ -52,6 +53,7 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
 
     return new_values;
   };
+
   return (
     <Form
       {...layout}
@@ -92,52 +94,84 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
     </Form>
   );
 };
-const CreateTournament = ({ cancel, onFinish }) => (
-  <Form
-    {...layout}
-    name="nest-messages"
-    onFinish={onFinish}
-    validateMessages={validateMessages}
-  >
-    <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-      <Input />
-    </Form.Item>
-    <Form.Item name="desc" label="Description">
-      <Input />
-    </Form.Item>
-    <Form.Item name="starttime" label="Date">
-      <DatePicker showTime format="YYYY-MM-DD HH:mm" />
-    </Form.Item>
-    <Form.Item
-      name="tournament_type"
-      label="Type:"
-      rules={[{ required: true }]}
+const CreateTournament = ({ cancel, onFinish }) => {
+  const [form] = Form.useForm();
+
+  const handleStep = (value, info) => {
+    const dir = info.type === "up" ? 1 : -1;
+    const currentType = form.getFieldValue("tournament_type");
+    console.log(`TYPE: ${currentType}`);
+    console.log(`dir: ${dir}`);
+    switch (currentType) {
+      default:
+      case "round-robin":
+        value = value + 1 * dir;
+        break;
+      case "swiss":
+        if (value % 2 !== 0) {
+          value = value + 1;
+        }
+        value = value + 2 * dir;
+        break;
+      case "single-elimination":
+        const log = Math.log2(value);
+        value = Math.pow(2, Math.floor(log) + dir);
+    }
+    console.log(`Step new value: ${value}`);
+    form.setFieldsValue({
+      number_of_teams: value,
+    });
+  };
+
+  return (
+    <Form
+      {...layout}
+      name="nest-messages"
+      onFinish={onFinish}
+      validateMessages={validateMessages}
+      form={form}
     >
-      <Select>
-        <Option value="round-robin">round-robin</Option>
-        <Option value="swiss">swiss</Option>
-        <Option value="single-elimination"> single-elimination</Option>
-      </Select>
-    </Form.Item>
-    <Form.Item
-      name="number_of_teams"
-      label="Number of teams: "
-      rules={[{ required: true }]}
-    >
-      <InputNumber />
-    </Form.Item>
-    <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
-      <Space size="middle">
-        <Button type="primary" htmlType="submit">
-          Submit
-        </Button>
-        <Button type="primary" onClick={cancel}>
-          Cancel
-        </Button>
-      </Space>
-    </Form.Item>
-  </Form>
-);
+      <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name="desc" label="Description">
+        <Input />
+      </Form.Item>
+      <Form.Item name="starttime" label="Date">
+        <DatePicker showTime format="YYYY-MM-DD HH:mm" />
+      </Form.Item>
+      <Form.Item
+        name="tournament_type"
+        label="Type:"
+        rules={[{ required: true }]}
+      >
+        <Select>
+          <Option value="round-robin">round-robin</Option>
+          <Option value="swiss">swiss</Option>
+          <Option value="single-elimination"> single-elimination</Option>
+        </Select>
+      </Form.Item>
+      <Form.Item
+        name="number_of_teams"
+        label="Number of teams: "
+        rules={[{ required: true }]}
+      >
+        <InputNumber min={2} step={0} onStep={handleStep} />
+      </Form.Item>
+      <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
+        <Space size="middle">
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
+          <Button type="primary" onClick={cancel}>
+            Cancel
+          </Button>
+        </Space>
+      </Form.Item>
+    </Form>
+  );
+};
+
 const TournamentCreator = () => {
   const { currentToken } = useContext(AuthContext);
   let fbToken = currentToken ? currentToken : null;

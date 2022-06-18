@@ -58,11 +58,11 @@ const Teams = () => {
     setCurrentPage(1);
     queryClient.refetchQueries(["all-teams"]);
     queryClient.refetchQueries(["all-teams-count"]);
-  }, [queryClient, searched, currentPage, fbToken]);
+  }, [queryClient, searched, fbToken]);
 
   useEffect(() => {
     queryClient.refetchQueries(["all-teams"]);
-  }, [queryClient, currentPage]);
+  }, [queryClient, currentPage, fbToken]);
 
   return teamsOnPage ? (
     <Layout className="list-background">

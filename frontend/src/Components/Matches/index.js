@@ -55,15 +55,14 @@ const Matches = () => {
   );
 
   useEffect(() => {
-    console.log("Change");
     setCurrentPage(1);
     queryClient.refetchQueries(["all-matches"]);
     queryClient.refetchQueries(["all-matches-count"]);
-  }, [queryClient, searched, currentPage, fbToken]);
+  }, [queryClient, searched, fbToken]);
 
   useEffect(() => {
     queryClient.refetchQueries(["all-matches"]);
-  }, [queryClient, currentPage]);
+  }, [queryClient, currentPage, fbToken]);
 
   return matchesOnPage ? (
     <Layout className="list-background">
