@@ -100,8 +100,6 @@ const CreateTournament = ({ cancel, onFinish }) => {
   const handleStep = (value, info) => {
     const dir = info.type === "up" ? 1 : -1;
     const currentType = form.getFieldValue("tournament_type");
-    console.log(`TYPE: ${currentType}`);
-    console.log(`dir: ${dir}`);
     switch (currentType) {
       default:
       case "round-robin":
@@ -117,7 +115,21 @@ const CreateTournament = ({ cancel, onFinish }) => {
         const log = Math.log2(value);
         value = Math.pow(2, Math.floor(log) + dir);
     }
-    console.log(`Step new value: ${value}`);
+    form.setFieldsValue({
+      number_of_teams: value,
+    });
+  };
+
+  const handleChange = (value) => {
+    const currentType = form.getFieldValue("tournament_type");
+    switch (currentType) {
+      case "swiss":
+        if (value % 2 !== 0) value = value + 1;
+        break;
+      case "single-elimination":
+        const log = Math.log2(value);
+        value = Math.pow(2, Math.floor(log));
+    }
     form.setFieldsValue({
       number_of_teams: value,
     });
@@ -156,7 +168,12 @@ const CreateTournament = ({ cancel, onFinish }) => {
         label="Number of teams: "
         rules={[{ required: true }]}
       >
-        <InputNumber min={2} step={0} onStep={handleStep} />
+        <InputNumber
+          min={2}
+          step={0}
+          onStep={handleStep}
+          onChange={handleChange}
+        />
       </Form.Item>
       <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
         <Space size="middle">
