@@ -33,7 +33,7 @@ const Teams = () => {
   const { isIdle, error: err, data: teamsOnPage } = useQuery(
     ["all-teams", currentPage, searched],
     async ({ queryKey }) => {
-      const [_, currentPage, searched] = queryKey;
+      const [, currentPage, searched] = queryKey;
       const res = await Api.get(
         `/teams/search/?skip=${(currentPage - 1) * pageSize}&limit=${pageSize}`,
         { headers: { "firebase-token": fbToken, name: searched } }
@@ -46,7 +46,7 @@ const Teams = () => {
   const { countIsIdle, error: countErr, data: allTeams } = useQuery(
     ["all-teams-count", searched],
     async ({ queryKey }) => {
-      const [_, searched] = queryKey;
+      const [, searched] = queryKey;
       const res = await Api.get(`/teams_count_by_search/`, {
         headers: { "firebase-token": fbToken, name: searched },
       });

@@ -29,7 +29,7 @@ const Matches = () => {
   const { isIdle, error: err, data: matchesOnPage } = useQuery(
     ["all-matches", currentPage, searched],
     async ({ queryKey }) => {
-      const [_, currentPage, searched] = queryKey;
+      const [, currentPage, searched] = queryKey;
       const res = await Api.get(
         `/matches/search/?skip=${
           (currentPage - 1) * pageSize
@@ -46,7 +46,7 @@ const Matches = () => {
   const { countIsIdle, error: countErr, data: allMatches } = useQuery(
     ["all-matches-count", searched],
     async ({ queryKey }) => {
-      const [_, searched] = queryKey;
+      const [, searched] = queryKey;
       const res = await Api.get(`/matches_count_by_search/`, {
         headers: { "firebase-token": fbToken, name: searched },
       });

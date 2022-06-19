@@ -26,6 +26,7 @@ const validateMessages = {
 };
 const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
   const [nameToId, setNameToId] = useState({});
+  const [currentSearch, setCurrentSearch] = useState({});
   const handleSearch = (value) => {
     Api.get("/teams/search/", {
       headers: {
@@ -33,12 +34,13 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
         name: value,
       },
     }).then((result) => {
-      setNameToId(
+      setCurrentSearch(
         result.data.reduce((acc, { id, name }) => {
           acc[name] = id;
           return acc;
         }, {})
       );
+      setNameToId({ ...nameToId, ...currentSearch });
     });
   };
 
@@ -73,7 +75,7 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
           label={`Team ${index + 1}`}
         >
           <AutoComplete onSearch={handleSearch} placeholder="input here">
-            {Object.keys(nameToId).map((team) => (
+            {Object.keys(currentSearch).map((team) => (
               <Option key={team} value={team}>
                 {team}
               </Option>
@@ -129,6 +131,9 @@ const CreateTournament = ({ cancel, onFinish }) => {
       case "single-elimination":
         const log = Math.log2(value);
         value = Math.pow(2, Math.floor(log));
+        break;
+      default:
+        break;
     }
     form.setFieldsValue({
       number_of_teams: value,
