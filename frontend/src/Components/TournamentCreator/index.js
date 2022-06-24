@@ -27,6 +27,7 @@ const validateMessages = {
 const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
   const [nameToId, setNameToId] = useState({});
   const [currentSearch, setCurrentSearch] = useState({});
+
   const handleSearch = (value) => {
     Api.get("/teams/search/", {
       headers: {
@@ -34,13 +35,12 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
         name: value,
       },
     }).then((result) => {
-      setCurrentSearch(
-        result.data.reduce((acc, { id, name }) => {
-          acc[name] = id;
-          return acc;
-        }, {})
-      );
-      setNameToId({ ...nameToId, ...currentSearch });
+      const searchResults = result.data.reduce((acc, { id, name }) => {
+        acc[name] = id;
+        return acc;
+      }, {});
+      setCurrentSearch(searchResults);
+      setNameToId({ ...nameToId, ...searchResults });
     });
   };
 
@@ -64,7 +64,7 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
     >
       {isSwiss && (
         <Form.Item name="swiss_rounds" label="Rounds:">
-          <InputNumber />
+          <InputNumber min={1} />
         </Form.Item>
       )}
       {[...Array(teamCount)].map((_, index) => (
