@@ -63,7 +63,7 @@ const CreateTeams = ({ fbToken, cancel, onFinish, teamCount, isSwiss }) => {
       validateMessages={validateMessages}
     >
       {isSwiss && (
-        <Form.Item name="swiss_rounds" label="Rounds:">
+        <Form.Item name="swiss_rounds" label="Rounds:" initialValue={3}>
           <InputNumber min={1} />
         </Form.Item>
       )}
@@ -172,9 +172,11 @@ const CreateTournament = ({ cancel, onFinish }) => {
         name="number_of_teams"
         label="Number of teams: "
         rules={[{ required: true }]}
+        initialValue={8}
       >
         <InputNumber
           min={2}
+          max={32}
           step={0}
           onStep={handleStep}
           onChange={handleChange}
