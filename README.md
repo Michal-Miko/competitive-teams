@@ -21,25 +21,36 @@ Main technologies used in the development of this project:
 
 We've provided a simple bash script for starting and combining the outputs of both servers. To run the servers locally:
 
-<ol>
-    <li>Create and configure a new Google Firebase project.</li>
-    <li>Export the environmental variables from your Google Firebase project and place them in the <code>frontend/.env.local</code>file with the following syntax:
-        <ul>
-            <li><code>REACT_APP_FIREBASE_APIKEY=apiKey</code></li>
-            <li><code>REACT_APP_FIREBASE_DOMAIN=authDomain</code></li>
-            <li><code>REACT_APP_FIREBASE_DATABASE=projectId</code></li>
-            <li><code>REACT_APP_FIREBASE_PROJECT_ID=storageBucket</code></li>
-            <li><code>REACT_APP_FIREBASE_STORAGE_BUCKET=messagingSenderId</code></li>
-            <li><code>REACT_APP_FIREBASE_SENDER_ID=appId</code></li>
-        </ul>
-    </li>
-    <li>Configure and start your PostgreSQL server.</li>
-    <li>Replace the <code>DATABASE_URL</code> variable inside the <code>run-dev.sh</code> script with your PostgreSQL database URL.</li>
-    <li>If you'd like to change the default development server ports, make sure to update the <code>REACT_APP_BACKEND_URL</code> variable inside the <code>run-dev.sh</code> script afterwards.</li>
-    <li>Install frontend packages with <code>npm install</code> in the <code>frontend</code> directory</li>
-    <li>Create a python venv with <code>python -m venv env</code> in the <code>backend</code> directory</li>
-    <li>Activate the venv with <code>source ./env/bin/activate</code> in the <code>backend</code> directory</li>
-    <li>Install backend packages with <code>pip install -r requirements.txt</code> in the <code>backend</code> directory</li>
-    <li>Deactivate the venv with <code>deactivate</code> in the <code>backend</code> directory</li>
-    <li>Start the <code>run-dev.sh</code> script.</li>
-</ol>
+
+* Create and configure a new Google Firebase project.
+* Generate a private key JSON file and save it as `backend/.env.local/saf.json`.
+* Export the environmental variables from your Google Firebase project and place them in the `frontend/.env.local` file:
+    ```bash
+    REACT_APP_FIREBASE_APIKEY="<key>"
+    REACT_APP_FIREBASE_AUTHDOMAIN="<domain>"
+    REACT_APP_FIREBASE_PROJECTID="<id>"
+    REACT_APP_FIREBASE_STORAGEBUCKET="<bucket>"
+    REACT_APP_FIREBASE_MESSAGINGSENDERID="<id>"
+    REACT_APP_FIREBASE_APPID="<id>"
+    REACT_APP_FIREBASE_MEASUREMENTID="<id>"
+    ```
+* Optional - set up your own PostgreSQL server (instead of using the DB container included in the `run-dev.sh` script):
+    * Configure and start your PostgreSQL server.
+    * Comment out the PostgreSQL docker container setup in `run-dev.sh`
+    * Replace the `DATABASE_URL` variable inside the `run-dev.sh` script with your PostgreSQL database URL.
+* Install frontend packages:
+    ```bash
+    cd frontend
+    npm install
+    cd ..
+    ```
+* Install backend packages and setup a venv:
+    ```bash
+    cd backend
+    python -m venv env
+    source ./env/bin/activate
+    pip install -r requirements.txt
+    deactivate
+    cd ..
+    ```
+* Start the `run-dev.sh` script.
