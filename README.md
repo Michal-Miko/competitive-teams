@@ -1,6 +1,6 @@
 # Competitive Teams ![build status](https://app.travis-ci.com/Michal-Miko/competitive-teams.svg?branch=develop)
 
-https://competitive-teams.herokuapp.com
+https://uwr-competitive-teams.herokuapp.com
 
 ## Description
 
