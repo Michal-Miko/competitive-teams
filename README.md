@@ -19,9 +19,16 @@ Main technologies used in the development of this project:
 
 ## Running the development servers
 
-We've provided a simple bash script for starting and combining the outputs of both servers. To run the servers locally:
+Requirements:
+* docker (if you're not hosting your own DB server)
+* python
+* nodejs
+
+We've provided a small bash script to simplify the server launch and log aggregation.
+If you prefer to manage your DB separately, you can comment out the `docker run` command and update the `DATABASE_URL` variable in `run-dev.sh`.
 
 
+These are the steps required to set up the local dev environment:
 * Create and configure a new Google Firebase project.
 * Generate a private key JSON file and save it as `backend/.env.local/saf.json`.
 * Export the environmental variables from your Google Firebase project and place them in the `frontend/.env.local` file:
@@ -34,10 +41,6 @@ We've provided a simple bash script for starting and combining the outputs of bo
     REACT_APP_FIREBASE_APPID="<id>"
     REACT_APP_FIREBASE_MEASUREMENTID="<id>"
     ```
-* Optional - set up your own PostgreSQL server (instead of using the DB container included in the `run-dev.sh` script):
-    * Configure and start your PostgreSQL server.
-    * Comment out the PostgreSQL docker container setup in `run-dev.sh`
-    * Replace the `DATABASE_URL` variable inside the `run-dev.sh` script with your PostgreSQL database URL.
 * Install frontend packages:
     ```bash
     cd frontend
