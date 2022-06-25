@@ -46,7 +46,6 @@ const MatchCreator = () => {
       "/matches/",
       {
         name: values.name,
-        description: values.desc,
         color: "ffffff",
         start_time: values.starttime,
         finished: false,
@@ -106,9 +105,6 @@ const MatchCreator = () => {
     >
       <Form.Item name="name" label="Name" rules={[{ required: true }]}>
         <Input />
-      </Form.Item>
-      <Form.Item name="desc" label="Description">
-        <TextArea />
       </Form.Item>
       <Form.Item name="starttime" label="Date">
         <DatePicker showTime format="YYYY-MM-DD HH:mm" />
